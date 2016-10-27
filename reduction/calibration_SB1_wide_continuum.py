@@ -189,7 +189,7 @@ clean(vis=cont_vis,
       field='W51e2w',
       spw=spwrange,
       weighting='briggs', imsize=[2560,2560], cell=['0.01 arcsec'],
-      mode='mfs', threshold='2 mJy', niter=10000,
+      mode='mfs', threshold='1.0 mJy', niter=10000,
       selectdata=True)
 exportfits(imagename+".image", imagename+".image.fits", overwrite=True, dropdeg=True)
 
@@ -213,59 +213,6 @@ clean(vis=cont_vis,
       field='W51 North',
       spw=spwrange,
       weighting='briggs', imsize=[2560,2560], cell=['0.01 arcsec'],
-      mode='mfs', threshold='2 mJy', niter=10000,
+      mode='mfs', threshold='0.5 mJy', niter=10000,
       selectdata=True)
 exportfits(imagename+".image", imagename+".image.fits", overwrite=True, dropdeg=True)
-
-
-
-
-#spw17vis='QbandAarray_spw17_raw_continuum.ms'
-#split(vis=vis, outputvis=spw17vis, datacolumn='data', spw='17')
-#applycal(vis=spw17vis,field=fluxcal,
-#         gaintable=['cal_cont_spws.gaincurve','cal_cont_spws.K0',
-#                    'cal_cont_spws.B0','cal_cont_spws.G1int','cal_cont_spws.G2'],
-#         gainfield=['','','','',fluxcal,fluxcal],
-#         interp=['','','nearest','nearest','nearest','nearest'],
-#         parang=False,calwt=False)
-##
-#applycal(vis=spw17vis,field=phasecal,
-#         gaintable=['cal_cont_spws.gaincurve','cal_cont_spws.K0',
-#                    'cal_cont_spws.B0','cal_cont_spws.G1int','cal_cont_spws.G2',
-#                    'cal_cont_spws.F3inc'],
-#         gainfield=['','','','',phasecal,phasecal,phasecal],
-#         interp=['','','nearest','nearest','nearest','nearest',''],
-#         parang=False,calwt=False)
-##
-#applycal(vis=spw17vis,field=source,
-#         gaintable=['cal_cont_spws.gaincurve','cal_cont_spws.K0',
-#                    'cal_cont_spws.B0','cal_cont_spws.G1inf','cal_cont_spws.G2',
-#                    'cal_cont_spws.F3inc'],
-#         gainfield=['','','','',phasecal,phasecal,phasecal],
-#         interp=['','','nearest','nearest','linear','linear',''],
-#         parang=False,calwt=False)
-#
-#cont_vis='QbandAarray_cont_spws_raw_continuum.ms'
-#split(vis=cont_vis, outputvis='QbandAarray_cont_spws_cal_continuum.ms', width=128, datacolumn='corrected', spw='0')
-#spw17vis='QbandAarray_spw17_raw_continuum.ms'
-#split(vis=spw17vis, outputvis='QbandAarray_spw17_cal_continuum.ms', width=1024, datacolumn='corrected', spw='0')
-#
-#
-#imagename = 'QbandAarray_spw17_continuum_cal_dirty'
-#clean(vis=spw17vis,
-#      imagename=imagename,
-#      field=source,
-#      weighting='briggs', imsize=[256,256], cell=['1.0 arcsec'],
-#      mode='mfs', threshold='20 mJy', niter=0,
-#      selectdata=True)
-#exportfits(imagename+".image", imagename+".image.fits", overwrite=True, dropdeg=True)
-#
-#
-#imagename = 'QbandAarray_spw17_continuum_cal_clean'
-#clean(vis=spw17vis,
-#      imagename=imagename,
-#      field=source,
-#      weighting='briggs', imsize=[256,256], cell=['1.0 arcsec'],
-#      mode='mfs', threshold='20 mJy', niter=10000,
-#      selectdata=True)
-#exportfits(imagename+".image", imagename+".image.fits", overwrite=True, dropdeg=True)
