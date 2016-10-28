@@ -14,6 +14,23 @@ contspw = '2,4,5,6,7,8,9,10,12,13,14,15,16,17,18,19,22,23,24,25,26,28,29,30,31,3
 linespw = ",".join([str(x) for x in range(2,65) if x not in map(int, contspw.split(","))])
 linespw = '3,11,20,21,27,33,38,40,41,43,46,61,18,23,42' # add 18, 23, 42 for OCS, H51a
 
+contspwlist = list(map(int, contspw.split(',')))
+def findprev(val):
+    while val not in contspwlist:
+        val = val - 1
+    return contspwlist.index(val)
+def findnext(val):
+    while val not in contspwlist:
+        val = val + 1
+    return contspwlist.index(val)
+
+spwmap = [[findprev(val), findnext(val)] for val in map(int, linespw.split(","))]
+# [[0, 1], [7, 8], [15, 16], [15, 16], [20, 21], [25, 26], [29, 30], [30, 31],
+# [30, 31], [31, 32], [33, 34], [47, 48], [14, 14], [17, 17], [31, 31]]
+spwmap = [[0,1], [7,8], [15,16], [15,16], [20,21], [25,26], [29,30], [30,31],
+          [30,31], [31,32], [33,34], [47,48], [14], [17], [31]]
+spwmap = [0,7,15,15,20,25,29,30,30,31,33,47,14,17,31]
+
 
 split(vis=vis, outputvis=line_vis, datacolumn='data', spw=linespw)
 flagdata(vis=line_vis, mode='unflag')
@@ -28,32 +45,55 @@ setjy_dict = setjy(vis=line_vis, field=fluxcal, scalebychan=True, model='3C48_C.
                    usescratch=False, standard='Perley-Butler 2013')
 print('setjy: ', setjy_dict)
 
-# g1int, the flux cal's self-cal, flags out 50% of the data
-# maybe we don't care, since we're doing literally nothing with the flux cal data
-# now....
-applycal(vis=line_vis,field=fluxcal,
+# causes segfault.
+# applycal(vis=line_vis, field=fluxcal, gaintable=['cal_cont_spws.gaincurve',],
+#          gainfield=['',], interp=['',], spwmap=spwmap, parang=False,
+#          calwt=False)
+
+applycal(vis=line_vis, field=fluxcal, gaintable=['cal_cont_spws.K0',],
+         gainfield=['',], interp=['',], spwmap=spwmap, parang=False,
+         calwt=False)
+
+applycal(vis=line_vis, field=fluxcal, gaintable=['cal_cont_spws.B0',],
+         gainfield=['',], interp=['linearPD,linear',], spwmap=spwmap, parang=False,
+         calwt=False)
+
+applycal(vis=line_vis, field=fluxcal, gaintable=['cal_cont_spws.G1int',],
+         gainfield=['',], interp=['linearPD,linear',], spwmap=spwmap, parang=False,
+         calwt=False)
+
+applycal(vis=line_vis, field=fluxcal, gaintable=['cal_cont_spws.G2',],
+         gainfield=['',], interp=['linearPD,linear'], spwmap=spwmap, parang=False,
+         calwt=False)
+
+applycal(vis=line_vis,
+         field=fluxcal,
          gaintable=['cal_cont_spws.gaincurve','cal_cont_spws.K0',
                     'cal_cont_spws.B0','cal_cont_spws.G1int','cal_cont_spws.G2'],
          gainfield=['','','','',fluxcal,fluxcal],
-         interp=['','','nearest','nearest','nearest','nearest'],
+         interp=['', '', 'linearPD, linear',
+                 'linearPD, linear', 'linearPD, linear', 'linearPD, linear'],
+         spwmap=[spwmap]*5,
          parang=False,calwt=False)
 
-# G2 flags out 40%.  40% were already flagged for no clear reason.
 applycal(vis=line_vis,field=phasecal,
          gaintable=['cal_cont_spws.gaincurve','cal_cont_spws.K0',
                     'cal_cont_spws.B0','cal_cont_spws.G1int','cal_cont_spws.G2',
                     'cal_cont_spws.F3inc'],
          gainfield=['','','','',phasecal,phasecal,phasecal],
-         interp=['','','nearest','nearest','nearest','nearest',''],
+         interp=['', '', 'linearPD, linear',
+                 'linearPD, linear', 'linearPD, linear', 'linearPD, linear'],
+         spwmap=spwmap,
          parang=False,calwt=False)
 
-# again, G2 is the main culprit
 applycal(vis=line_vis,field=source,
          gaintable=['cal_cont_spws.gaincurve','cal_cont_spws.K0',
                     'cal_cont_spws.B0','cal_cont_spws.G1inf','cal_cont_spws.G2',
                     'cal_cont_spws.F3inc'],
          gainfield=['','','','',phasecal,phasecal,phasecal],
-         interp=['','','nearest','nearest','linear','linear',''],
+         interp=['', '', 'linearPD, linear',
+                 'linearPD, linear', 'linearPD, linear', 'linearPD, linear'],
+         spwmap=spwmap,
          parang=False,calwt=False)
 
 

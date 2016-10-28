@@ -10,7 +10,18 @@ fluxcal = '0137+331=3C48'
 phasecal = 'J1922+1530'
 source = 'W51e2w,W51 North'
 spwrange = ""
-spwrange = '2,4,5,6,7,8,9,10,12,13,14,15,16,17,18,19,22,23,24,25,26,28,29,30,31,32,34,35,36,37,39,42,44,45,47,48,49,50,51,52,53,54,55,56,57,58,59,60,62,63,64'
+contspw = '2,4,5,6,7,8,9,10,12,13,14,15,16,17,18,19,22,23,24,25,26,28,29,30,31,32,34,35,36,37,39,42,44,45,47,48,49,50,51,52,53,54,55,56,57,58,59,60,62,63,64'
+linespw = ",".join([str(x) for x in range(2,65) if x not in map(int, contspw.split(","))])
+linespw = '3,11,20,21,27,33,38,40,41,43,46,61,18,23,42' # add 18, 23, 42 for OCS, H51a
+
+contspwlist = list(map(int, contspw.split(',')))
+def findprev(val):
+    while val not in contspwlist:
+        val = val - 1
+        if val <= 0:
+            return 0
+    return val
+spwmap = [(x) if x in contspwlist else (findprev(x)) for x in range(0,65)]
 
 #split(vis=vis, outputvis=full_vis, datacolumn='data', spw='2,4,5,6,7,8,9,10,12,13,14,15,16,17,18,19',
 #      width=8)
@@ -26,7 +37,15 @@ setjy_dict = setjy(vis=full_vis, field=fluxcal, scalebychan=True, model='3C48_C.
                    usescratch=False, standard='Perley-Butler 2013')
 print('setjy: ', setjy_dict)
 
-rmtables(['cal_all_spws.G0','cal_all_spws.K0','cal_all_spws.antpos','cal_all_spws.gaincurve','cal_all_spws.G1inf'])
+rmtables(['cal_all_spws.G0',
+          'cal_all_spws.K0',
+          'cal_all_spws.antpos',
+          'cal_all_spws.gaincurve',
+          'cal_all_spws.G1inf',
+          'cal_all_spws.G2',
+          'cal_all_spws.G3',
+          'cal_all_spws.requantizer',
+         ])
 # no antenna offsets found....
 # gencal(vis=full_vis,caltable='cal_all_spws.antpos',caltype='antpos',antenna='')
 gencal(vis=full_vis,caltable='cal_all_spws.gaincurve',caltype='gc')
@@ -59,9 +78,9 @@ bandpass(vis=full_vis,caltable='cal_all_spws.B0',
          gaintable=['cal_all_spws.gaincurve',
                     'cal_all_spws.G0','cal_all_spws.K0'],
          field=phasecal,refant=refant,solnorm=False,
-         fillgaps=4,
+         fillgaps=8,
          minsnr=2,
-         bandtype='BPOLY', combine='scan', solint='inf,8MHz')
+         bandtype='BPOLY', combine='scan', solint='inf,1MHz')
 
 
 # fluxcal: some solutions flagged (~1/3)
@@ -166,106 +185,6 @@ applycal(vis=full_vis,field=source,
                     'cal_all_spws.B0','cal_all_spws.G1inf','cal_all_spws.G2',
                     'cal_all_spws.F3inc'],
          gainfield=['','','','',phasecal,phasecal,phasecal],
-         interp=['','','nearest','nearest','linear','linear',''],
+         interp=['','','nearest','nearest','linearPD,linear','linearPD,linear',''],
+         spwmap=[[], [], [], spwmap, spwmap, spwmap],
          parang=False,calwt=False)
-
-
-
-
-imagename = 'W51e2w_QbandAarray_all_spws_raw_continuum_cal_dirty'
-clean(vis=full_vis,
-      imagename=imagename,
-      field='W51e2w',
-      spw=spwrange,
-      weighting='briggs', imsize=[2560,2560], cell=['0.01 arcsec'],
-      mode='mfs', threshold='20 mJy', niter=0,
-      selectdata=True)
-exportfits(imagename+".image", imagename+".image.fits", overwrite=True, dropdeg=True)
-
-
-imagename = 'W51e2w_QbandAarray_all_spws_raw_continuum_cal_clean'
-clean(vis=full_vis,
-      imagename=imagename,
-      field='W51e2w',
-      spw=spwrange,
-      weighting='briggs', imsize=[2560,2560], cell=['0.01 arcsec'],
-      mode='mfs', threshold='2 mJy', niter=10000,
-      selectdata=True)
-exportfits(imagename+".image", imagename+".image.fits", overwrite=True, dropdeg=True)
-
-
-
-
-imagename = 'W51North_QbandAarray_all_spws_raw_continuum_cal_dirty'
-clean(vis=full_vis,
-      imagename=imagename,
-      field='W51 North',
-      spw=spwrange,
-      weighting='briggs', imsize=[2560,2560], cell=['0.01 arcsec'],
-      mode='mfs', threshold='20 mJy', niter=0,
-      selectdata=True)
-exportfits(imagename+".image", imagename+".image.fits", overwrite=True, dropdeg=True)
-
-
-imagename = 'W51North_QbandAarray_all_spws_raw_continuum_cal_clean'
-clean(vis=full_vis,
-      imagename=imagename,
-      field='W51 North',
-      spw=spwrange,
-      weighting='briggs', imsize=[2560,2560], cell=['0.01 arcsec'],
-      mode='mfs', threshold='2 mJy', niter=10000,
-      selectdata=True)
-exportfits(imagename+".image", imagename+".image.fits", overwrite=True, dropdeg=True)
-
-
-
-
-#spw17vis='QbandAarray_spw17_raw_continuum.ms'
-#split(vis=vis, outputvis=spw17vis, datacolumn='data', spw='17')
-#applycal(vis=spw17vis,field=fluxcal,
-#         gaintable=['cal_all_spws.gaincurve','cal_all_spws.K0',
-#                    'cal_all_spws.B0','cal_all_spws.G1int','cal_all_spws.G2'],
-#         gainfield=['','','','',fluxcal,fluxcal],
-#         interp=['','','nearest','nearest','nearest','nearest'],
-#         parang=False,calwt=False)
-##
-#applycal(vis=spw17vis,field=phasecal,
-#         gaintable=['cal_all_spws.gaincurve','cal_all_spws.K0',
-#                    'cal_all_spws.B0','cal_all_spws.G1int','cal_all_spws.G2',
-#                    'cal_all_spws.F3inc'],
-#         gainfield=['','','','',phasecal,phasecal,phasecal],
-#         interp=['','','nearest','nearest','nearest','nearest',''],
-#         parang=False,calwt=False)
-##
-#applycal(vis=spw17vis,field=source,
-#         gaintable=['cal_all_spws.gaincurve','cal_all_spws.K0',
-#                    'cal_all_spws.B0','cal_all_spws.G1inf','cal_all_spws.G2',
-#                    'cal_all_spws.F3inc'],
-#         gainfield=['','','','',phasecal,phasecal,phasecal],
-#         interp=['','','nearest','nearest','linear','linear',''],
-#         parang=False,calwt=False)
-#
-#full_vis='QbandAarray_all_spws_raw_continuum.ms'
-#split(vis=full_vis, outputvis='QbandAarray_all_spws_cal_continuum.ms', width=128, datacolumn='corrected', spw='0')
-#spw17vis='QbandAarray_spw17_raw_continuum.ms'
-#split(vis=spw17vis, outputvis='QbandAarray_spw17_cal_continuum.ms', width=1024, datacolumn='corrected', spw='0')
-#
-#
-#imagename = 'QbandAarray_spw17_continuum_cal_dirty'
-#clean(vis=spw17vis,
-#      imagename=imagename,
-#      field=source,
-#      weighting='briggs', imsize=[256,256], cell=['1.0 arcsec'],
-#      mode='mfs', threshold='20 mJy', niter=0,
-#      selectdata=True)
-#exportfits(imagename+".image", imagename+".image.fits", overwrite=True, dropdeg=True)
-#
-#
-#imagename = 'QbandAarray_spw17_continuum_cal_clean'
-#clean(vis=spw17vis,
-#      imagename=imagename,
-#      field=source,
-#      weighting='briggs', imsize=[256,256], cell=['1.0 arcsec'],
-#      mode='mfs', threshold='20 mJy', niter=10000,
-#      selectdata=True)
-#exportfits(imagename+".image", imagename+".image.fits", overwrite=True, dropdeg=True)

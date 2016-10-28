@@ -172,6 +172,10 @@ applycal(vis=cont_vis,field=source,
 
 
 
+
+# quicklook continuum images
+
+
 imagename = 'W51e2w_QbandAarray_cont_spws_raw_continuum_cal_dirty'
 clean(vis=cont_vis,
       imagename=imagename,

@@ -10,11 +10,13 @@ CH3OH = 48.372467 A1/C1 overlap
 CH3OH = 48.376889 A1/C1 overlap
 """
 
-line_vis = '16B-202.lines.ms'
+#line_vis = '16B-202.lines.ms'
+line_vis = vis = '16B-202.sb32532587.eb32875589.57663.07622001157.ms'
 
-for line, freq, spw in (('SiO_v=0', 43.42385, 46),
-                        ('SiO_v=1', 43.12209, 43),
+for line, freq, spw in (
                         ('SiO_v=2', 42.82057, 40),
+                        ('SiO_v=1', 43.12209, 43),
+                        ('SiO_v=0', 43.42385, 46),
                         ('SiO_v=3', 42.51937, 38),
                         ('NH3_17-17', 42.83992, 41),
                         ('NH3_18-18', 46.1227, 3),
@@ -40,7 +42,7 @@ for line, freq, spw in (('SiO_v=0', 43.42385, 46),
         tclean(vis=line_vis,
                imagename=imagename,
                field='W51e2w',
-               spw=spw,
+               spw='{0}'.format(spw),
                weighting='briggs',
                robust=0.0,
                imsize=[512,512],
@@ -71,8 +73,8 @@ for line, freq, spw in (('SiO_v=0', 43.42385, 46),
         tclean(vis=line_vis,
                imagename=imagename,
                field='W51 North',
-               phasecenter='J2000 19:23:39.933 +14:31:05.28',
-               spw=spw,
+               phasecenter='J2000 19h23m39.933 +14d31m05.28',
+               spw='{0}'.format(spw),
                weighting='briggs',
                robust=0.0,
                imsize=[768,768],
