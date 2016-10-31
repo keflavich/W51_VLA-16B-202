@@ -82,6 +82,14 @@ bandpass(vis=full_vis,caltable='cal_all_spws.B0',
          minsnr=2,
          bandtype='BPOLY', combine='scan', solint='inf,1MHz')
 
+bandpass(vis=full_vis,caltable='cal_all_spws.B0_nopoly',
+         gaintable=['cal_all_spws.gaincurve',
+                    'cal_all_spws.G0','cal_all_spws.K0'],
+         field=phasecal,refant=refant,solnorm=False,
+         fillgaps=8,
+         minsnr=2,
+         bandtype='B', combine='scan', solint='inf,1MHz')
+
 
 # fluxcal: some solutions flagged (~1/3)
 # ea04 is now flagged out...
@@ -90,7 +98,7 @@ bandpass(vis=full_vis,caltable='cal_all_spws.B0',
 # ea15, ea17 mostly flagged out
 gaincal(vis=full_vis,caltable='cal_all_spws.G1int',
         gaintable=['cal_all_spws.gaincurve',
-                   'cal_all_spws.K0','cal_all_spws.B0'],
+                   'cal_all_spws.K0','cal_all_spws.B0_nopoly'],
         field=fluxcal,refant=refant,solnorm=False,
         spw=spwrange,
         solint='20s',gaintype='G',calmode='p')
@@ -98,7 +106,7 @@ gaincal(vis=full_vis,caltable='cal_all_spws.G1int',
 # phasecal: few solutions flagged (~1/34)
 gaincal(vis=full_vis,caltable='cal_all_spws.G1int',
         gaintable=['cal_all_spws.gaincurve',
-                   'cal_all_spws.K0','cal_all_spws.B0'],
+                   'cal_all_spws.K0','cal_all_spws.B0_nopoly'],
         field=phasecal,refant=refant,solnorm=False,
         spw=spwrange,
         solint='int',gaintype='G',calmode='p',append=True)
@@ -107,7 +115,7 @@ gaincal(vis=full_vis,caltable='cal_all_spws.G1int',
 # phasecal, inf... no complaints
 gaincal(vis=full_vis,caltable='cal_all_spws.G1inf',
         gaintable=['cal_all_spws.gaincurve',
-                   'cal_all_spws.K0','cal_all_spws.B0'],
+                   'cal_all_spws.K0','cal_all_spws.B0_nopoly'],
         field=phasecal,refant=refant,solnorm=F,
         spw=spwrange,
         solint='inf',gaintype='G',calmode='p')
@@ -116,7 +124,7 @@ gaincal(vis=full_vis,caltable='cal_all_spws.G1inf',
 gaincal(vis=full_vis, caltable='cal_all_spws.G2',
         gaintable=['cal_all_spws.gaincurve',
                    'cal_all_spws.K0',
-                   'cal_all_spws.B0',
+                   'cal_all_spws.B0_nopoly',
                    'cal_all_spws.G1int'],
         gainfield=['','',phasecal,phasecal,fluxcal], # changed from fluxcal->phasecal b/c we changed which is being used
         interp=['','','nearest','nearest','nearest'],
@@ -128,7 +136,7 @@ gaincal(vis=full_vis, caltable='cal_all_spws.G2',
 gaincal(vis=full_vis, caltable='cal_all_spws.G2',
         gaintable=['cal_all_spws.gaincurve',
                    'cal_all_spws.K0',
-                   'cal_all_spws.B0',
+                   'cal_all_spws.B0_nopoly',
                    'cal_all_spws.G1int'],
         gainfield=['','',phasecal,phasecal,phasecal], # changed from fluxcal->phasecal b/c we changed which is being used
         interp=['','','nearest','nearest','nearest'],
@@ -139,7 +147,7 @@ gaincal(vis=full_vis, caltable='cal_all_spws.G2',
 
 gaincal(vis=full_vis, caltable='cal_all_spws.G3',
         gaintable=['cal_all_spws.gaincurve',
-                   'cal_all_spws.K0','cal_all_spws.B0','cal_all_spws.G1int'],
+                   'cal_all_spws.K0','cal_all_spws.B0_nopoly','cal_all_spws.G1int'],
         gainfield=['','',fluxcal,fluxcal,fluxcal],
         interp=['','','nearest','nearest','nearest'],
         field=fluxcal,refant=refant,solnorm=F,
@@ -148,7 +156,7 @@ gaincal(vis=full_vis, caltable='cal_all_spws.G3',
 #
 gaincal(vis=full_vis, caltable='cal_all_spws.G3',
         gaintable=['cal_all_spws.gaincurve',
-                   'cal_all_spws.K0','cal_all_spws.B0','cal_all_spws.G1int'],
+                   'cal_all_spws.K0','cal_all_spws.B0_nopoly','cal_all_spws.G1int'],
         gainfield=['','',fluxcal,fluxcal,phasecal],
         interp=['','','nearest','nearest','nearest'],
         field=phasecal,refant=refant,solnorm=F,
@@ -160,31 +168,26 @@ myflux = fluxscale(vis=full_vis,caltable='cal_all_spws.G3',
                    incremental=True)
 
 
-# g1int, the flux cal's self-cal, flags out 50% of the data
-# maybe we don't care, since we're doing literally nothing with the flux cal data
-# now....
 applycal(vis=full_vis,field=fluxcal,
          gaintable=['cal_all_spws.gaincurve','cal_all_spws.K0',
-                    'cal_all_spws.B0','cal_all_spws.G1int','cal_all_spws.G2'],
+                    'cal_all_spws.B0_nopoly','cal_all_spws.G1int','cal_all_spws.G2'],
          gainfield=['','','','',fluxcal,fluxcal],
          interp=['','','nearest','nearest','nearest','nearest'],
          parang=False,calwt=False)
 
-# G2 flags out 40%.  40% were already flagged for no clear reason.
 applycal(vis=full_vis,field=phasecal,
          gaintable=['cal_all_spws.gaincurve','cal_all_spws.K0',
-                    'cal_all_spws.B0','cal_all_spws.G1int','cal_all_spws.G2',
+                    'cal_all_spws.B0_nopoly','cal_all_spws.G1int','cal_all_spws.G2',
                     'cal_all_spws.F3inc'],
          gainfield=['','','','',phasecal,phasecal,phasecal],
          interp=['','','nearest','nearest','nearest','nearest',''],
          parang=False,calwt=False)
 
-# again, G2 is the main culprit
 applycal(vis=full_vis,field=source,
          gaintable=['cal_all_spws.gaincurve','cal_all_spws.K0',
-                    'cal_all_spws.B0','cal_all_spws.G1inf','cal_all_spws.G2',
+                    'cal_all_spws.B0_nopoly','cal_all_spws.G1inf','cal_all_spws.G2',
                     'cal_all_spws.F3inc'],
-         gainfield=['','','','',phasecal,phasecal,phasecal],
+         gainfield=['',phasecal,phasecal,phasecal,phasecal,phasecal,phasecal],
          interp=['','','nearest','nearest','linearPD,linear','linearPD,linear',''],
-         spwmap=[[], [], [], spwmap, spwmap, spwmap],
+         #spwmap=[[], [], [], spwmap, spwmap, spwmap, []],
          parang=False,calwt=False)
