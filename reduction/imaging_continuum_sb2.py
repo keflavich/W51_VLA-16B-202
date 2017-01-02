@@ -1,12 +1,11 @@
-vis = ['16B-202.sb32532587.eb32875589.57663.07622001157.ms',
-       '16B-202.sb32957824.eb33105444.57748.63243916667.ms']
+vis = '16B-202.sb32957824.eb33105444.57748.63243916667.ms'
 contspw = '2,4,5,6,7,8,9,10,12,13,14,15,16,17,18,19,22,23,24,25,26,28,29,30,31,32,34,35,36,37,39,42,44,45,47,48,49,50,51,52,53,54,55,56,57,58,59,60,62,63,64'
 
 
 """
 Normal, shallow tclean imaging of both fields
 """
-output = myimagebase = imagename = 'W51e2w_QbandAarray_cont_spws_raw_continuum_cal_clean'
+output = myimagebase = imagename = 'W51e2w_SB2_QbandAarray_cont_spws_raw_continuum_cal_clean'
 tclean(vis=vis,
        imagename=imagename,
        field='W51e2w',
@@ -32,7 +31,7 @@ for suffix in ('pb', 'weight', 'sumwt', 'psf', 'model', 'mask',
                'image', 'residual'):
     os.system('rm -rf {0}.{1}'.format(output, suffix))
 
-output = myimagebase = imagename = 'W51North_QbandAarray_cont_spws_raw_continuum_cal_clean'
+output = myimagebase = imagename = 'W51North_SB2_QbandAarray_cont_spws_raw_continuum_cal_clean'
 tclean(vis=vis,
        imagename=imagename,
        field='W51 North',
@@ -62,7 +61,7 @@ for suffix in ('pb', 'weight', 'sumwt', 'psf', 'model', 'mask',
 """
 nterms=2, spectral slope cleaning
 """
-output = myimagebase = imagename = 'W51e2w_QbandAarray_cont_spws_continuum_cal_clean_2terms'
+output = myimagebase = imagename = 'W51e2w_SB2_QbandAarray_cont_spws_continuum_cal_clean_2terms'
 tclean(vis=vis,
        imagename=imagename,
        field='W51e2w',
@@ -89,7 +88,7 @@ tclean(vis=vis,
 #                'image', 'residual'):
 #     os.system('rm -rf {0}.{1}'.format(output, suffix))
 
-output = myimagebase = imagename = 'W51North_QbandAarray_cont_spws_continuum_cal_clean_2terms'
+output = myimagebase = imagename = 'W51North_SB2_QbandAarray_cont_spws_continuum_cal_clean_2terms'
 tclean(vis=vis,
        imagename=imagename,
        field='W51 North',
