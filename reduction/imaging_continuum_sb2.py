@@ -79,14 +79,14 @@ tclean(vis=vis,
        nterms=2,
        selectdata=True)
 
-# not sure what to use hereimpbcor(imagename=myimagebase+'.image', pbimage=myimagebase+'.pb', outfile=myimagebase+'.image.pbcor', overwrite=True)
-# not sure what to use hereexportfits(imagename=myimagebase+'.image.pbcor', fitsimage=myimagebase+'.image.pbcor.fits', overwrite=True, dropdeg=True)
-# not sure what to use hereexportfits(imagename=myimagebase+'.pb', fitsimage=myimagebase+'.pb.fits', overwrite=True, dropdeg=True)
-# not sure what to use hereexportfits(imagename=myimagebase+'.residual', fitsimage=myimagebase+'.residual.fits', overwrite=True, dropdeg=True)
+impbcor(imagename=myimagebase+'.image', pbimage=myimagebase+'.pb', outfile=myimagebase+'.image.pbcor', overwrite=True)
+exportfits(imagename=myimagebase+'.image.pbcor', fitsimage=myimagebase+'.image.pbcor.fits', overwrite=True, dropdeg=True)
+exportfits(imagename=myimagebase+'.pb', fitsimage=myimagebase+'.pb.fits', overwrite=True, dropdeg=True)
+exportfits(imagename=myimagebase+'.residual', fitsimage=myimagebase+'.residual.fits', overwrite=True, dropdeg=True)
 
-# for suffix in ('pb', 'weight', 'sumwt', 'psf', 'model', 'mask',
-#                'image', 'residual'):
-#     os.system('rm -rf {0}.{1}'.format(output, suffix))
+for suffix in ('pb', 'weight', 'sumwt', 'psf', 'model', 'mask',
+               'image', 'residual'):
+    os.system('rm -rf {0}.{1}'.format(output, suffix))
 
 output = myimagebase = imagename = 'W51North_SB2_QbandAarray_cont_spws_continuum_cal_clean_2terms'
 tclean(vis=vis,
@@ -106,11 +106,11 @@ tclean(vis=vis,
        nterms=2,
        selectdata=True)
 
-# not sure what to use impbcor(imagename=myimagebase+'.image', pbimage=myimagebase+'.pb', outfile=myimagebase+'.image.pbcor', overwrite=True)
-# not sure what to use exportfits(imagename=myimagebase+'.image.pbcor', fitsimage=myimagebase+'.image.pbcor.fits', overwrite=True, dropdeg=True)
-# not sure what to use exportfits(imagename=myimagebase+'.pb', fitsimage=myimagebase+'.pb.fits', overwrite=True, dropdeg=True)
-# not sure what to use exportfits(imagename=myimagebase+'.residual', fitsimage=myimagebase+'.residual.fits', overwrite=True, dropdeg=True)
-# not sure what to use 
-# not sure what to use for suffix in ('pb', 'weight', 'sumwt', 'psf', 'model', 'mask',
-# not sure what to use                'image', 'residual'):
-# not sure what to use     os.system('rm -rf {0}.{1}'.format(output, suffix))
+impbcor(imagename=myimagebase+'.image', pbimage=myimagebase+'.pb', outfile=myimagebase+'.image.pbcor', overwrite=True)
+exportfits(imagename=myimagebase+'.image.pbcor', fitsimage=myimagebase+'.image.pbcor.fits', overwrite=True, dropdeg=True)
+exportfits(imagename=myimagebase+'.pb', fitsimage=myimagebase+'.pb.fits', overwrite=True, dropdeg=True)
+exportfits(imagename=myimagebase+'.residual', fitsimage=myimagebase+'.residual.fits', overwrite=True, dropdeg=True)
+
+for suffix in ('pb', 'weight', 'sumwt', 'psf', 'model', 'mask',
+               'image', 'residual'):
+    os.system('rm -rf {0}.{1}'.format(output, suffix))
