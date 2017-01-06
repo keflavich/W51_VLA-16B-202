@@ -171,3 +171,31 @@ exportfits(imagename=myimagebase+'.residual', fitsimage=myimagebase+'.residual.f
 for suffix in ('pb', 'weight', 'sumwt', 'psf', 'model', 'mask',
                'image', 'residual'):
     os.system('rm -rf {0}.{1}'.format(output, suffix))
+
+
+
+
+
+for robust,suffix in [(-2,'uniform'), (0,'robust0'), (2,'natural')]:
+    output = myimagebase = imagename = 'W51e5_QbandAarray_cont_spws_continuum_cal_clean_{0}'.format(suffix)
+    tclean(vis=vis,
+           imagename=imagename,
+           field='W51e2w,W51 North',
+           phasecenter="J2000 19h23m41.858 +14d30m56.674",
+           spw=contspw,
+           weighting='briggs',
+           robust=robust,
+           imsize=[2560,2560],
+           cell=['0.01 arcsec'],
+           threshold='1.0 mJy',
+           niter=10000,
+           gridder='standard',
+           specmode='mfs',
+           outframe='LSRK',
+           savemodel='none',
+           selectdata=True)
+
+    impbcor(imagename=myimagebase+'.image', pbimage=myimagebase+'.pb', outfile=myimagebase+'.image.pbcor', overwrite=True)
+    exportfits(imagename=myimagebase+'.image.pbcor', fitsimage=myimagebase+'.image.pbcor.fits', overwrite=True, dropdeg=True)
+    exportfits(imagename=myimagebase+'.pb', fitsimage=myimagebase+'.pb.fits', overwrite=True, dropdeg=True)
+    exportfits(imagename=myimagebase+'.residual', fitsimage=myimagebase+'.residual.fits', overwrite=True, dropdeg=True)
