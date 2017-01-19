@@ -1,4 +1,6 @@
-vis = ['16B-202.sb32532587.eb32875589.57663.07622001157.ms',
+# SB1 may have terrible calibration (is 2x as faint, and wasn't appropriately
+# statwt'd b/c it didn't go through the pipeline)
+vis = [#'16B-202.sb32532587.eb32875589.57663.07622001157.ms',
        '16B-202.sb32957824.eb33105444.57748.63243916667.ms',
        '16B-202.sb32957824.eb33142274.57752.64119381944.ms',
        '16B-202.sb32957824.eb33234671.57760.62953023148.ms',
@@ -20,7 +22,8 @@ tclean(vis=vis,
        cell=['0.01 arcsec'],
        threshold='1.0 mJy',
        niter=10000,
-       gridder='standard',
+       gridder='wproject',
+       wprojplanes=32,
        specmode='mfs',
        outframe='LSRK',
        savemodel='none',
@@ -46,7 +49,8 @@ tclean(vis=vis,
        cell=['0.01 arcsec'],
        threshold='1.0 mJy',
        niter=10000,
-       gridder='standard',
+       gridder='wproject',
+       wprojplanes=32,
        specmode='mfs',
        outframe='LSRK',
        savemodel='none',
@@ -76,8 +80,10 @@ tclean(vis=vis,
        cell=['0.01 arcsec'],
        threshold='1.0 mJy',
        niter=10000,
-       gridder='standard',
+       gridder='wproject',
+       wprojplanes=32,
        specmode='mfs',
+       deconvolver='mtmfs',
        outframe='LSRK',
        savemodel='none',
        nterms=2,
@@ -103,8 +109,10 @@ tclean(vis=vis,
        cell=['0.01 arcsec'],
        threshold='1.0 mJy',
        niter=10000,
-       gridder='standard',
+       gridder='wproject',
+       wprojplanes=32,
        specmode='mfs',
+       deconvolver='mtmfs',
        outframe='LSRK',
        savemodel='none',
        nterms=2,
@@ -119,59 +127,6 @@ for suffix in ('pb', 'weight', 'sumwt', 'psf', 'model', 'mask',
                'image', 'residual'):
     os.system('rm -rf {0}.{1}'.format(output, suffix))
 
-
-
-output = myimagebase = imagename = 'W51e2w_QbandAarray_cont_spws_continuum_cal_clean_natural'
-tclean(vis=vis,
-       imagename=imagename,
-       field='W51e2w',
-       spw=contspw,
-       weighting='briggs',
-       robust=2.0,
-       imsize=[5120,5120],
-       cell=['0.01 arcsec'],
-       threshold='1.0 mJy',
-       niter=10000,
-       gridder='standard',
-       specmode='mfs',
-       outframe='LSRK',
-       savemodel='none',
-       selectdata=True)
-
-impbcor(imagename=myimagebase+'.image', pbimage=myimagebase+'.pb', outfile=myimagebase+'.image.pbcor', overwrite=True)
-exportfits(imagename=myimagebase+'.image.pbcor', fitsimage=myimagebase+'.image.pbcor.fits', overwrite=True, dropdeg=True)
-exportfits(imagename=myimagebase+'.pb', fitsimage=myimagebase+'.pb.fits', overwrite=True, dropdeg=True)
-exportfits(imagename=myimagebase+'.residual', fitsimage=myimagebase+'.residual.fits', overwrite=True, dropdeg=True)
-
-for suffix in ('pb', 'weight', 'sumwt', 'psf', 'model', 'mask',
-               'image', 'residual'):
-    os.system('rm -rf {0}.{1}'.format(output, suffix))
-
-output = myimagebase = imagename = 'W51North_QbandAarray_cont_spws_continuum_cal_clean_natural'
-tclean(vis=vis,
-       imagename=imagename,
-       field='W51 North',
-       spw=contspw,
-       weighting='briggs',
-       robust=2.0,
-       imsize=[5120,5120],
-       cell=['0.01 arcsec'],
-       threshold='1.0 mJy',
-       niter=10000,
-       gridder='standard',
-       specmode='mfs',
-       outframe='LSRK',
-       savemodel='none',
-       selectdata=True)
-
-impbcor(imagename=myimagebase+'.image', pbimage=myimagebase+'.pb', outfile=myimagebase+'.image.pbcor', overwrite=True)
-exportfits(imagename=myimagebase+'.image.pbcor', fitsimage=myimagebase+'.image.pbcor.fits', overwrite=True, dropdeg=True)
-exportfits(imagename=myimagebase+'.pb', fitsimage=myimagebase+'.pb.fits', overwrite=True, dropdeg=True)
-exportfits(imagename=myimagebase+'.residual', fitsimage=myimagebase+'.residual.fits', overwrite=True, dropdeg=True)
-
-for suffix in ('pb', 'weight', 'sumwt', 'psf', 'model', 'mask',
-               'image', 'residual'):
-    os.system('rm -rf {0}.{1}'.format(output, suffix))
 
 
 
@@ -190,7 +145,8 @@ for robust,suffix in [(-2,'uniform'), (0,'robust0'), (2,'natural')]:
            cell=['0.01 arcsec'],
            threshold='1.0 mJy',
            niter=10000,
-           gridder='standard',
+           gridder='wproject',
+           wprojplanes=32,
            specmode='mfs',
            outframe='LSRK',
            savemodel='none',
@@ -200,3 +156,58 @@ for robust,suffix in [(-2,'uniform'), (0,'robust0'), (2,'natural')]:
     exportfits(imagename=myimagebase+'.image.pbcor', fitsimage=myimagebase+'.image.pbcor.fits', overwrite=True, dropdeg=True)
     exportfits(imagename=myimagebase+'.pb', fitsimage=myimagebase+'.pb.fits', overwrite=True, dropdeg=True)
     exportfits(imagename=myimagebase+'.residual', fitsimage=myimagebase+'.residual.fits', overwrite=True, dropdeg=True)
+
+
+for robust,suffix in [(-2,'uniform'), (0,'robust0'), (2,'natural')]:
+    output = myimagebase = imagename = 'W51North_QbandAarray_cont_spws_continuum_cal_clean_{0}'.format(suffix)
+    tclean(vis=vis,
+           imagename=imagename,
+           field='W51 North',
+           spw=contspw,
+           weighting='briggs',
+           robust=robust,
+           imsize=[5120,5120],
+           cell=['0.01 arcsec'],
+           threshold='1.0 mJy',
+           niter=10000,
+           gridder='wproject',
+           wprojplanes=32,
+           specmode='mfs',
+           outframe='LSRK',
+           savemodel='none',
+           selectdata=True)
+
+    impbcor(imagename=myimagebase+'.image', pbimage=myimagebase+'.pb', outfile=myimagebase+'.image.pbcor', overwrite=True)
+    exportfits(imagename=myimagebase+'.image.pbcor', fitsimage=myimagebase+'.image.pbcor.fits', overwrite=True, dropdeg=True)
+    exportfits(imagename=myimagebase+'.pb', fitsimage=myimagebase+'.pb.fits', overwrite=True, dropdeg=True)
+    exportfits(imagename=myimagebase+'.residual', fitsimage=myimagebase+'.residual.fits', overwrite=True, dropdeg=True)
+
+
+for robust,suffix in [(-2,'uniform'), (0,'robust0'), (2,'natural')]:
+    output = myimagebase = imagename = 'W51e2w_QbandAarray_cont_spws_continuum_cal_clean_{0}'.format(suffix)
+    tclean(vis=vis,
+           imagename=imagename,
+           field='W51e2w',
+           spw=contspw,
+           weighting='briggs',
+           robust=robust,
+           imsize=[5120,5120],
+           cell=['0.01 arcsec'],
+           threshold='1.0 mJy',
+           niter=10000,
+           gridder='wproject',
+           wprojplanes=32,
+           specmode='mfs',
+           outframe='LSRK',
+           savemodel='none',
+           selectdata=True)
+
+    impbcor(imagename=myimagebase+'.image', pbimage=myimagebase+'.pb', outfile=myimagebase+'.image.pbcor', overwrite=True)
+    exportfits(imagename=myimagebase+'.image.pbcor', fitsimage=myimagebase+'.image.pbcor.fits', overwrite=True, dropdeg=True)
+    exportfits(imagename=myimagebase+'.pb', fitsimage=myimagebase+'.pb.fits', overwrite=True, dropdeg=True)
+    exportfits(imagename=myimagebase+'.residual', fitsimage=myimagebase+'.residual.fits', overwrite=True, dropdeg=True)
+
+    for suffix in ('pb', 'weight', 'sumwt', 'psf', 'model', 'mask',
+                   'image', 'residual'):
+        os.system('rm -rf {0}.{1}'.format(output, suffix))
+
