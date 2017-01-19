@@ -11,7 +11,7 @@ contspw = '2,4,5,6,7,8,9,10,12,13,14,15,16,17,18,19,22,23,24,25,26,28,29,30,31,3
 """
 Normal, shallow tclean imaging of both fields
 """
-output = myimagebase = imagename = 'W51e2w_QbandAarray_cont_spws_raw_continuum_cal_clean'
+output = myimagebase = imagename = 'W51e2w_QbandAarray_cont_spws_continuum_cal_clean_robust0_wproj'
 tclean(vis=vis,
        imagename=imagename,
        field='W51e2w',
@@ -38,7 +38,7 @@ for suffix in ('pb', 'weight', 'sumwt', 'psf', 'model', 'mask',
                'image', 'residual'):
     os.system('rm -rf {0}.{1}'.format(output, suffix))
 
-output = myimagebase = imagename = 'W51North_QbandAarray_cont_spws_raw_continuum_cal_clean'
+output = myimagebase = imagename = 'W51North_QbandAarray_cont_spws_continuum_cal_clean_robust0_wproj'
 tclean(vis=vis,
        imagename=imagename,
        field='W51 North',
@@ -69,7 +69,7 @@ for suffix in ('pb', 'weight', 'sumwt', 'psf', 'model', 'mask',
 """
 nterms=2, spectral slope cleaning
 """
-output = myimagebase = imagename = 'W51e2w_QbandAarray_cont_spws_continuum_cal_clean_2terms'
+output = myimagebase = imagename = 'W51e2w_QbandAarray_cont_spws_continuum_cal_clean_2terms_robust0_wproj'
 tclean(vis=vis,
        imagename=imagename,
        field='W51e2w',
@@ -89,8 +89,8 @@ tclean(vis=vis,
        nterms=2,
        selectdata=True)
 
-impbcor(imagename=myimagebase+'.image', pbimage=myimagebase+'.pb', outfile=myimagebase+'.image.pbcor', overwrite=True)
-exportfits(imagename=myimagebase+'.image.pbcor', fitsimage=myimagebase+'.image.pbcor.fits', overwrite=True, dropdeg=True)
+impbcor(imagename=myimagebase+'.image.tt0', pbimage=myimagebase+'.pb', outfile=myimagebase+'.image.tt0.pbcor', overwrite=True)
+exportfits(imagename=myimagebase+'.image.tt0.pbcor', fitsimage=myimagebase+'.image.tt0.pbcor.fits', overwrite=True, dropdeg=True)
 exportfits(imagename=myimagebase+'.pb', fitsimage=myimagebase+'.pb.fits', overwrite=True, dropdeg=True)
 exportfits(imagename=myimagebase+'.residual', fitsimage=myimagebase+'.residual.fits', overwrite=True, dropdeg=True)
 
@@ -98,7 +98,7 @@ for suffix in ('pb', 'weight', 'sumwt', 'psf', 'model', 'mask',
                'image', 'residual'):
     os.system('rm -rf {0}.{1}'.format(output, suffix))
 
-output = myimagebase = imagename = 'W51North_QbandAarray_cont_spws_continuum_cal_clean_2terms'
+output = myimagebase = imagename = 'W51North_QbandAarray_cont_spws_continuum_cal_clean_2terms_robust0_wproj'
 tclean(vis=vis,
        imagename=imagename,
        field='W51 North',
@@ -118,8 +118,8 @@ tclean(vis=vis,
        nterms=2,
        selectdata=True)
 
-impbcor(imagename=myimagebase+'.image', pbimage=myimagebase+'.pb', outfile=myimagebase+'.image.pbcor', overwrite=True)
-exportfits(imagename=myimagebase+'.image.pbcor', fitsimage=myimagebase+'.image.pbcor.fits', overwrite=True, dropdeg=True)
+impbcor(imagename=myimagebase+'.image.tt0', pbimage=myimagebase+'.pb', outfile=myimagebase+'.image.tt0.pbcor', overwrite=True)
+exportfits(imagename=myimagebase+'.image.tt0.pbcor', fitsimage=myimagebase+'.image.tt0.pbcor.fits', overwrite=True, dropdeg=True)
 exportfits(imagename=myimagebase+'.pb', fitsimage=myimagebase+'.pb.fits', overwrite=True, dropdeg=True)
 exportfits(imagename=myimagebase+'.residual', fitsimage=myimagebase+'.residual.fits', overwrite=True, dropdeg=True)
 
@@ -133,7 +133,7 @@ for suffix in ('pb', 'weight', 'sumwt', 'psf', 'model', 'mask',
 
 
 for robust,suffix in [(-2,'uniform'), (0,'robust0'), (2,'natural')]:
-    output = myimagebase = imagename = 'W51e5_QbandAarray_cont_spws_continuum_cal_clean_{0}'.format(suffix)
+    output = myimagebase = imagename = 'W51e5_QbandAarray_cont_spws_continuum_cal_clean_{0}_wproj'.format(suffix)
     tclean(vis=vis,
            imagename=imagename,
            field='W51e2w,W51 North',
@@ -159,7 +159,7 @@ for robust,suffix in [(-2,'uniform'), (0,'robust0'), (2,'natural')]:
 
 
 for robust,suffix in [(-2,'uniform'), (0,'robust0'), (2,'natural')]:
-    output = myimagebase = imagename = 'W51North_QbandAarray_cont_spws_continuum_cal_clean_{0}'.format(suffix)
+    output = myimagebase = imagename = 'W51North_QbandAarray_cont_spws_continuum_cal_clean_{0}_wproj'.format(suffix)
     tclean(vis=vis,
            imagename=imagename,
            field='W51 North',
@@ -184,7 +184,7 @@ for robust,suffix in [(-2,'uniform'), (0,'robust0'), (2,'natural')]:
 
 
 for robust,suffix in [(-2,'uniform'), (0,'robust0'), (2,'natural')]:
-    output = myimagebase = imagename = 'W51e2w_QbandAarray_cont_spws_continuum_cal_clean_{0}'.format(suffix)
+    output = myimagebase = imagename = 'W51e2w_QbandAarray_cont_spws_continuum_cal_clean_{0}_wproj'.format(suffix)
     tclean(vis=vis,
            imagename=imagename,
            field='W51e2w',
