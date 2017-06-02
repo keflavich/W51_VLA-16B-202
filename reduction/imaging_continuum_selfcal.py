@@ -29,8 +29,10 @@ concat(vis=cont_vises, concatvis=cont_vis)
 
 selfcal_vis = cont_vis
 
-for iternum, threshold, caltype, calmode in [(0,'5.0 mJy','phase','p'),
-                                             (1,'2.5 mJy','phase','p'),
+imsize = 7680
+
+for iternum, threshold, caltype, calmode in [(0,'2.5 mJy','phase','p'), # first attempt was 5; too conservative
+                                             (1,'1.5 mJy','phase','p'),
                                              (2,'1.0 mJy','phase','p'),
                                              (3,'1.0 mJy','ampphase','ap'),
                                              (4,'0.5 mJy','ampphase','ap'),
@@ -49,7 +51,7 @@ for iternum, threshold, caltype, calmode in [(0,'5.0 mJy','phase','p'),
                spw='',
                weighting='briggs',
                robust=0.0,
-               imsize=[7680,7680],
+               imsize=imsize,
                cell=['0.01 arcsec'],
                threshold=threshold,
                niter=10000,
@@ -78,7 +80,7 @@ tclean(vis=selfcal_vis,
        spw='',
        weighting='briggs',
        robust=0.0,
-       imsize=[7680,7680],
+       imsize=imsize,
        cell=['0.01 arcsec'],
        threshold=threshold,
        niter=10000,
