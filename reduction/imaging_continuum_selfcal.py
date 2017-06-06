@@ -36,6 +36,7 @@ for iternum, threshold, caltype, calmode in [(0,'2.5 mJy','phase','p'), # first 
                                              (2,'1.0 mJy','phase','p'),
                                              (3,'1.0 mJy','ampphase','ap'),
                                              (4,'0.5 mJy','ampphase','ap'),
+                                             (5,'0.25 mJy','ampphase','ap'),
                                             ]:
     for field in ('W51e2w', 'W51 North'):
         field_nospace = field.replace(" ","_")
@@ -54,13 +55,14 @@ for iternum, threshold, caltype, calmode in [(0,'2.5 mJy','phase','p'), # first 
                imsize=imsize,
                cell=['0.01 arcsec'],
                threshold=threshold,
-               niter=10000,
+               niter=100000,
                gridder='wproject',
                wprojplanes=32,
                specmode='mfs',
                deconvolver='mtmfs',
                outframe='LSRK',
                savemodel='modelcolumn',
+               scales=[0,3,9],
                nterms=2,
                selectdata=True)
         makefits(myimagebase)
@@ -73,23 +75,29 @@ for iternum, threshold, caltype, calmode in [(0,'2.5 mJy','phase','p'), # first 
         applycal(vis=selfcal_vis, field=field, gaintable=[caltable],
                  interp="linear", applymode='calonly', calwt=False)
 
-output = myimagebase = imagename = '{0}_QbandAarray_cont_spws_continuum_cal_clean_2terms_robust0_wproj_selfcal{1}'.format(field_nospace, iternum+1)
-tclean(vis=selfcal_vis,
-       imagename=imagename,
-       field=field,
-       spw='',
-       weighting='briggs',
-       robust=0.0,
-       imsize=imsize,
-       cell=['0.01 arcsec'],
-       threshold=threshold,
-       niter=10000,
-       gridder='wproject',
-       wprojplanes=32,
-       specmode='mfs',
-       deconvolver='mtmfs',
-       outframe='LSRK',
-       savemodel='modelcolumn',
-       nterms=2,
-       selectdata=True)
-makefits(myimagebase)
+for field in ('W51e2w', 'W51 North'):
+    output = myimagebase = imagename = '{0}_QbandAarray_cont_spws_continuum_cal_clean_2terms_robust0_wproj_selfcal{1}'.format(field_nospace, iternum+1)
+
+    for suffix in ('pb', 'weight', 'sumwt', 'psf', 'model', 'mask',
+                   'image', 'residual'):
+        os.system('rm -rf {0}.{1}'.format(output, suffix))
+
+    tclean(vis=selfcal_vis,
+           imagename=imagename,
+           field=field,
+           spw='',
+           weighting='briggs',
+           robust=0.0,
+           imsize=imsize,
+           cell=['0.01 arcsec'],
+           threshold=threshold,
+           niter=10000,
+           gridder='wproject',
+           wprojplanes=32,
+           specmode='mfs',
+           deconvolver='mtmfs',
+           outframe='LSRK',
+           savemodel='modelcolumn',
+           nterms=2,
+           selectdata=True)
+    makefits(myimagebase)
