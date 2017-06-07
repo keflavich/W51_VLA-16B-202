@@ -1,3 +1,7 @@
+# field_list = ('W51e2w', 'W51 North')
+if 'field_list' not in locals():
+    raise ValueError("Set field_list")
+
 def makefits(myimagebase):
     impbcor(imagename=myimagebase+'.image.tt0', pbimage=myimagebase+'.pb.tt0', outfile=myimagebase+'.image.tt0.pbcor', overwrite=True) # perform PBcorr
     exportfits(imagename=myimagebase+'.image.tt0.pbcor', fitsimage=myimagebase+'.image.tt0.pbcor.fits', dropdeg=True, overwrite=True) # export the corrected image
@@ -31,14 +35,19 @@ selfcal_vis = cont_vis
 
 imsize = 7680
 
-for iternum, threshold, caltype, calmode in [(0,'2.5 mJy','phase','p'), # first attempt was 5; too conservative
-                                             (1,'1.5 mJy','phase','p'),
-                                             (2,'1.0 mJy','phase','p'),
-                                             (3,'1.0 mJy','ampphase','ap'),
-                                             (4,'0.5 mJy','ampphase','ap'),
-                                             (5,'0.25 mJy','ampphase','ap'),
-                                            ]:
-    for field in ('W51e2w', 'W51 North'):
+mask = None
+
+for iternum, threshold, caltype, calmode, solint in [(0,'2.5 mJy','phase','p', '30s'), # first attempt was 5; too conservative
+                                                     (1,'1.5 mJy','phase','p', '30s'),
+                                                     (2,'1.0 mJy','phase','p', '30s'),
+                                                     (3,'1.0 mJy','phase','p', 'int'),
+                                                     (4,'1.0 mJy','ampphase','ap', '120s'),
+                                                     (5,'0.5 mJy','ampphase','ap', '120s'),
+                                                     (6,'0.25 mJy','ampphase','ap', '120s'),
+                                                     (7,'0.25 mJy','ampphase','ap', '30s'),
+                                                     (8,'0.25 mJy','ampphase','ap', 'int'),
+                                                    ]:
+    for field in field_list:
         field_nospace = field.replace(" ","_")
         output = myimagebase = imagename = '{0}_QbandAarray_cont_spws_continuum_cal_clean_2terms_robust0_wproj_selfcal{1}'.format(field_nospace, iternum)
 
@@ -64,16 +73,30 @@ for iternum, threshold, caltype, calmode in [(0,'2.5 mJy','phase','p'), # first 
                savemodel='modelcolumn',
                scales=[0,3,9],
                nterms=2,
-               selectdata=True)
+               selectdata=True,
+               mask=mask,
+              )
         makefits(myimagebase)
 
         caltable = '{2}_{1}_{0}.cal'.format(field_nospace, iternum, caltype)
         rmtables([caltable])
-        gaincal(vis=selfcal_vis, caltable=caltable, solint='int',
+        gaincal(vis=selfcal_vis, caltable=caltable, solint=solint,
                 gaintype='G', field=field, calmode=calmode)
 
         applycal(vis=selfcal_vis, field=field, gaintable=[caltable],
                  interp="linear", applymode='calonly', calwt=False)
+
+        cleanimage = myimagebase+'.image.tt0'
+        ia.open(cleanimage)
+        ia.calcmask(mask=cleanimage+" > {0}".format(float(threshold.split()[0])/1000),
+                    name='clean_mask_iter{0}'.format(iternum))
+        ia.close()
+        makemask(mode='copy', inpimage=cleanimage,
+                 inpmask=cleanimage+":clean_mask_iter{0}".format(iternum),
+                 output='clean_mask_{0}.mask'.format(iternum),
+                 overwrite=True)
+        mask = 'clean_mask_{0}.mask'.format(iternum)
+        exportfits(mask, mask+'.fits', dropdeg=True, overwrite=True)
 
 for field in ('W51e2w', 'W51 North'):
     output = myimagebase = imagename = '{0}_QbandAarray_cont_spws_continuum_cal_clean_2terms_robust0_wproj_selfcal{1}'.format(field_nospace, iternum+1)
