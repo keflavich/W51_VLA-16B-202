@@ -1,6 +1,8 @@
 # field_list = ('W51e2w', 'W51 North')
 if 'field_list' not in locals():
     raise ValueError("Set field_list")
+if isinstance(field_list, str):
+    raise TypeError("Make field list a list or tuple")
 
 def makefits(myimagebase):
     impbcor(imagename=myimagebase+'.image.tt0', pbimage=myimagebase+'.pb.tt0', outfile=myimagebase+'.image.tt0.pbcor', overwrite=True) # perform PBcorr
@@ -98,7 +100,7 @@ for iternum, threshold, caltype, calmode, solint in [(0,'2.5 mJy','phase','p', '
         mask = 'clean_mask_{0}.mask'.format(iternum)
         exportfits(mask, mask+'.fits', dropdeg=True, overwrite=True)
 
-for field in ('W51e2w', 'W51 North'):
+for field in field_list:
     output = myimagebase = imagename = '{0}_QbandAarray_cont_spws_continuum_cal_clean_2terms_robust0_wproj_selfcal{1}'.format(field_nospace, iternum+1)
 
     for suffix in ('pb', 'weight', 'sumwt', 'psf', 'model', 'mask',
