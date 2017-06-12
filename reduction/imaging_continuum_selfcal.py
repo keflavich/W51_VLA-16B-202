@@ -39,19 +39,26 @@ imsize = 7680
 
 mask = None
 
-for iternum, threshold, caltype, calmode, solint in [(0,'2.5 mJy','phase','p', '30s'), # first attempt was 5; too conservative
-                                                     (1,'1.5 mJy','phase','p', '30s'),
-                                                     (2,'1.0 mJy','phase','p', '30s'),
-                                                     (3,'1.0 mJy','phase','p', 'int'),
-                                                     (4,'1.0 mJy','ampphase','ap', '120s'),
-                                                     (5,'0.5 mJy','ampphase','ap', '120s'),
-                                                     (6,'0.25 mJy','ampphase','ap', '120s'),
-                                                     (7,'0.25 mJy','ampphase','ap', '30s'),
-                                                     (8,'0.25 mJy','ampphase','ap', 'int'),
-                                                    ]:
-    for field in field_list:
+for field in field_list:
+
+    # must iterate over fields separately because the mask name is being set and reset
+    for iternum, threshold, caltype, calmode, solint in [(0,'2.5 mJy','phase','p', '30s'), # first attempt was 5; too conservative
+                                                         (1,'1.5 mJy','phase','p', '30s'),
+                                                         (2,'1.0 mJy','phase','p', '30s'),
+                                                         (3,'1.0 mJy','phase','p', 'int'),
+                                                         (4,'1.0 mJy','phase','p', 'int'), # mostly a sanity check
+                                                         (5,'1.0 mJy','ampphase','ap', '120s'),
+                                                         (6,'0.5 mJy','ampphase','ap', '120s'),
+                                                         (7,'0.25 mJy','ampphase','ap', '120s'),
+                                                         (8,'0.25 mJy','ampphase','ap', '30s'),
+                                                         (9,'0.25 mJy','ampphase','ap', 'int'),
+                                                        ]:
         field_nospace = field.replace(" ","_")
         output = myimagebase = imagename = '{0}_QbandAarray_cont_spws_continuum_cal_clean_2terms_robust0_wproj_selfcal{1}'.format(field_nospace, iternum)
+
+        if os.path.exists(imagename+".image"):
+            mask = 'clean_mask_{0}_{1}.mask'.format(iternum, field_nospace)
+            continue
 
         for suffix in ('pb', 'weight', 'sumwt', 'psf', 'model', 'mask',
                        'image', 'residual'):
@@ -91,14 +98,22 @@ for iternum, threshold, caltype, calmode, solint in [(0,'2.5 mJy','phase','p', '
         cleanimage = myimagebase+'.image.tt0'
         ia.open(cleanimage)
         ia.calcmask(mask=cleanimage+" > {0}".format(float(threshold.split()[0])/1000),
-                    name='clean_mask_iter{0}'.format(iternum))
+                    name='clean_mask_iter{0}_{1}'.format(iternum, field_nospace))
+
         ia.close()
         makemask(mode='copy', inpimage=cleanimage,
-                 inpmask=cleanimage+":clean_mask_iter{0}".format(iternum),
-                 output='clean_mask_{0}.mask'.format(iternum),
+                 inpmask=cleanimage+":clean_mask_iter{0}_{1}".format(iternum, field_nospace),
+                 output='clean_mask_{0}_{1}.mask'.format(iternum, field_nospace),
                  overwrite=True)
-        mask = 'clean_mask_{0}.mask'.format(iternum)
+        mask = 'clean_mask_{0}_{1}.mask'.format(iternum, field_nospace)
         exportfits(mask, mask+'.fits', dropdeg=True, overwrite=True)
+
+        ia.open(modelimage+".model.tt0")
+        if ia.statistics()['min'] < 0:
+            raise ValueError("Negative model component encountered.")
+        ia.close()
+
+
 
 for field in field_list:
     output = myimagebase = imagename = '{0}_QbandAarray_cont_spws_continuum_cal_clean_2terms_robust0_wproj_selfcal{1}'.format(field_nospace, iternum+1)
