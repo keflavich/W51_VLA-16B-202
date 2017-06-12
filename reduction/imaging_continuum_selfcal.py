@@ -56,7 +56,7 @@ for field in field_list:
         field_nospace = field.replace(" ","_")
         output = myimagebase = imagename = '{0}_QbandAarray_cont_spws_continuum_cal_clean_2terms_robust0_wproj_selfcal{1}'.format(field_nospace, iternum)
 
-        if os.path.exists(imagename+".image"):
+        if os.path.exists(imagename+".image.tt0"):
             mask = 'clean_mask_{0}_{1}.mask'.format(iternum, field_nospace)
             continue
 
