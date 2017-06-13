@@ -108,7 +108,7 @@ for field in field_list:
         mask = 'clean_mask_{0}_{1}.mask'.format(iternum, field_nospace)
         exportfits(mask, mask+'.fits', dropdeg=True, overwrite=True)
 
-        ia.open(modelimage+".model.tt0")
+        ia.open(myimagebase+".model.tt0")
         if ia.statistics()['min'] < 0:
             raise ValueError("Negative model component encountered.")
         ia.close()
