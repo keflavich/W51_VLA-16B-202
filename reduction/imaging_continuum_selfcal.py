@@ -33,7 +33,7 @@ cont_vises = ["cont_"+vv for vv in vis]
 cont_vis = 'continuum_concatenated.ms'
 
 if not os.path.exists(cont_vis):
-    concat(vis=cont_vises, concatvis=cont_vis)
+    assert concat(vis=cont_vises, concatvis=cont_vis)
 
 selfcal_vis = cont_vis
 
