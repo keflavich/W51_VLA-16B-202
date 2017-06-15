@@ -111,8 +111,10 @@ for field in field_list:
         exportfits(mask, mask+'.fits', dropdeg=True, overwrite=True)
 
         ia.open(myimagebase+".model.tt0")
-        if ia.statistics()['min'] < 0:
-            raise ValueError("Negative model component encountered.")
+        stats = ia.statistics()
+        if stats['min'] < 0:
+            print("Negative model component encountered: {0}.".format(stats['min'])
+        print(stats)
         ia.close()
 
 
