@@ -113,7 +113,7 @@ for field in field_list:
         ia.open(myimagebase+".model.tt0")
         stats = ia.statistics()
         if stats['min'] < 0:
-            print("Negative model component encountered: {0}.".format(stats['min'])
+            print("Negative model component encountered: {0}.".format(stats['min']))
         print(stats)
         ia.close()
 
