@@ -44,17 +44,20 @@ mask = None
 for field in field_list:
 
     # must iterate over fields separately because the mask name is being set and reset
-    for iternum, threshold, caltype, calmode, solint in [(0,'2.5 mJy','phase','p', '30s'), # first attempt was 5; too conservative
-                                                         (1,'1.5 mJy','phase','p', '30s'),
-                                                         (2,'1.0 mJy','phase','p', '30s'),
-                                                         (3,'1.0 mJy','phase','p', 'int'),
-                                                         (4,'1.0 mJy','phase','p', 'int'), # mostly a sanity check
-                                                         (5,'1.0 mJy','ampphase','ap', '120s'),
-                                                         (6,'0.5 mJy','ampphase','ap', '120s'),
-                                                         (7,'0.25 mJy','ampphase','ap', '120s'),
-                                                         (8,'0.25 mJy','ampphase','ap', '30s'),
-                                                         (9,'0.25 mJy','ampphase','ap', 'int'),
-                                                        ]:
+    for iternum, nterms, threshold, caltype, calmode, solint in [(0, 2, '2.5 mJy','phase','p', '30s'), # first attempt was 5; too conservative
+                                                                 (1, 2, '1.5 mJy','phase','p', '30s'),
+                                                                 (2, 2, '1.0 mJy','phase','p', '30s'),
+                                                                 (3, 2, '1.0 mJy','phase','p', 'int'),
+                                                                 (4, 2, '1.0 mJy','phase','p', 'int'), # mostly a sanity check
+                                                                 (5, 2, '1.0 mJy','ampphase','ap', '120s'),
+                                                                 (6, 2, '0.5 mJy','ampphase','ap', '120s'),
+                                                                 (7, 2, '0.25 mJy','ampphase','ap', '120s'),
+                                                                 (8, 2, '0.25 mJy','ampphase','ap', '30s'),
+                                                                 (9, 2, '0.25 mJy','ampphase','ap', 'int'),
+                                                                 (10, 3, '0.25 mJy','bandpass', 'ap', 'inf'),
+                                                                 (11, 3, '0.25 mJy','bandpass', 'ap', 'inf'),
+                                                                 (12, 3, '0.25 mJy','bandpass', 'ap', 'inf'),
+                                                                ]:
         field_nospace = field.replace(" ","_")
         output = myimagebase = imagename = '{0}_QbandAarray_cont_spws_continuum_cal_clean_2terms_robust0_wproj_selfcal{1}'.format(field_nospace, iternum)
 
@@ -83,7 +86,7 @@ for field in field_list:
                outframe='LSRK',
                savemodel='modelcolumn',
                scales=[0,3,9],
-               nterms=2,
+               nterms=nterms,
                selectdata=True,
                mask=mask,
               )
@@ -91,8 +94,14 @@ for field in field_list:
 
         caltable = '{2}_{1}_{0}.cal'.format(field_nospace, iternum, caltype)
         rmtables([caltable])
-        gaincal(vis=selfcal_vis, caltable=caltable, solint=solint,
-                gaintype='G', field=field, calmode=calmode)
+        if 'phase' in caltype:
+            gaincal(vis=selfcal_vis, caltable=caltable, solint=solint,
+                    combine='spw',
+                    gaintype='G', field=field, calmode=calmode)
+        elif 'bandpass' in caltype:
+            bandpass(vis=selfcal_vis, caltable=caltable,
+                     solint='{0},16ch'.format(solint), combine='scan',
+                     field=field, refant='ea07')
 
         applycal(vis=selfcal_vis, field=field, gaintable=[caltable],
                  interp="linear", applymode='calonly', calwt=False)
@@ -120,6 +129,7 @@ for field in field_list:
 
 
 for field in field_list:
+    field_nospace = field.replace(" ","_")
     output = myimagebase = imagename = '{0}_QbandAarray_cont_spws_continuum_cal_clean_2terms_robust0_wproj_selfcal{1}'.format(field_nospace, iternum+1)
 
     for suffix in ('pb', 'weight', 'sumwt', 'psf', 'model', 'mask',
@@ -145,3 +155,43 @@ for field in field_list:
            nterms=2,
            selectdata=True)
     makefits(myimagebase)
+
+
+ms.open(selfcal_vis)
+mssum = ms.getspectralwindowinfo()
+ms.close()
+
+for field in field_list:
+    for frequency_range in ('40-45', '45-50'):
+        minfreq, maxfreq = map(float, frequency_range.split("-"))
+
+        spws = [spwid for spwid in mssum
+                if ((mssum[spwid]['Chan1Freq'] > minfreq*1e9) and
+                    (mssum[spwid]['Chan1Freq'] < maxfreq*1e9))]
+
+        field_nospace = field.replace(" ","_")
+        output = myimagebase = imagename = '{0}_QbandAarray_cont_spws_continuum_cal_clean_2terms_robust0_wproj_selfcal{1}_{2}'.format(field_nospace, iternum+1, frequency_range)
+
+        for suffix in ('pb', 'weight', 'sumwt', 'psf', 'model', 'mask',
+                       'image', 'residual'):
+            os.system('rm -rf {0}.{1}'.format(output, suffix))
+
+        tclean(vis=selfcal_vis,
+               imagename=imagename,
+               field=field,
+               spw=",".join(spws),
+               weighting='briggs',
+               robust=0.0,
+               imsize=imsize,
+               cell=['0.01 arcsec'],
+               threshold='0.25mJy',
+               niter=10000,
+               gridder='wproject',
+               wprojplanes=32,
+               specmode='mfs',
+               deconvolver='mtmfs',
+               outframe='LSRK',
+               savemodel='none',
+               nterms=2,
+               selectdata=True)
+        makefits(myimagebase)
