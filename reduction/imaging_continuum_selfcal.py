@@ -65,9 +65,11 @@ for field in field_list:
             mask = 'clean_mask_{0}_{1}.mask'.format(iternum, field_nospace)
             continue
 
-        for suffix in ('pb', 'weight', 'sumwt', 'psf', 'model', 'mask',
-                       'image', 'residual'):
-            os.system('rm -rf {0}.{1}'.format(output, suffix))
+        for ttsuffix in ('.tt0', '.tt1', 'tt2'):
+            for suffix in ('pb{tt}', 'weight', 'sumwt{tt}', 'psf{tt}',
+                           'model{tt}', 'mask', 'image{tt}', 'residual{tt}',
+                           'alpha', ):
+                os.system('rm -rf {0}.{1}'.format(output, suffix).format(tt=ttsuffix))
 
         tclean(vis=selfcal_vis,
                imagename=imagename,
