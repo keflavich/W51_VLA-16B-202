@@ -63,13 +63,17 @@ for field in field_list:
 
         if os.path.exists(imagename+".image.tt0"):
             mask = 'clean_mask_{0}_{1}.mask'.format(iternum, field_nospace)
+            print("Skipping {0}".format(imagename))
             continue
 
-        for ttsuffix in ('.tt0', '.tt1', 'tt2'):
+        for ttsuffix in ('.tt0', '.tt1', '.tt2'):
             for suffix in ('pb{tt}', 'weight', 'sumwt{tt}', 'psf{tt}',
                            'model{tt}', 'mask', 'image{tt}', 'residual{tt}',
+                           'image{tt}.pbcor',
                            'alpha', ):
-                os.system('rm -rf {0}.{1}'.format(output, suffix).format(tt=ttsuffix))
+                rmfile = "{0}.{1}".format(output, suffix).format(tt=ttsuffix)
+                print("Removing {0}".format(rmfile))
+                os.system('rm -rf {0}'.format(rmfile))
 
         tclean(vis=selfcal_vis,
                imagename=imagename,
@@ -157,43 +161,3 @@ for field in field_list:
            nterms=2,
            selectdata=True)
     makefits(myimagebase)
-
-
-ms.open(selfcal_vis)
-mssum = ms.getspectralwindowinfo()
-ms.close()
-
-for field in field_list:
-    for frequency_range in ('40-45', '45-50'):
-        minfreq, maxfreq = map(float, frequency_range.split("-"))
-
-        spws = [spwid for spwid in mssum
-                if ((mssum[spwid]['Chan1Freq'] > minfreq*1e9) and
-                    (mssum[spwid]['Chan1Freq'] < maxfreq*1e9))]
-
-        field_nospace = field.replace(" ","_")
-        output = myimagebase = imagename = '{0}_QbandAarray_cont_spws_continuum_cal_clean_2terms_robust0_wproj_selfcal{1}_{2}'.format(field_nospace, iternum+1, frequency_range)
-
-        for suffix in ('pb', 'weight', 'sumwt', 'psf', 'model', 'mask',
-                       'image', 'residual'):
-            os.system('rm -rf {0}.{1}'.format(output, suffix))
-
-        tclean(vis=selfcal_vis,
-               imagename=imagename,
-               field=field,
-               spw=",".join(spws),
-               weighting='briggs',
-               robust=0.0,
-               imsize=imsize,
-               cell=['0.01 arcsec'],
-               threshold='0.25mJy',
-               niter=10000,
-               gridder='wproject',
-               wprojplanes=32,
-               specmode='mfs',
-               deconvolver='mtmfs',
-               outframe='LSRK',
-               savemodel='none',
-               nterms=2,
-               selectdata=True)
-        makefits(myimagebase)
