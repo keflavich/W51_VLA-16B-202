@@ -23,7 +23,7 @@ for line, freq, spw in (
             os.system('rm -rf ' + output + '*/')
 
             # no need to specify velocity channels because it's so narrow
-            tclean(vis=line_vis,
+            tclean(vis=vis,
                    imagename=imagename,
                    field='W51 North',
                    phasecenter='J2000 19h23m40.050 +14d31m05.467',
