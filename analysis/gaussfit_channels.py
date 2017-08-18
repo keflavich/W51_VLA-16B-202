@@ -86,4 +86,4 @@ for line, freq, spw in (
                 #                eparams[3]*pixscale,
                 #                eparams[4]*pixscale,
                 #                eparams[5]])
-tbl.write('../tables/sio_maser_fits.ipac', format='ascii.ipac')
+tbl.write('../tables/sio_maser_fits.ipac', format='ascii.ipac', overwrite=True)

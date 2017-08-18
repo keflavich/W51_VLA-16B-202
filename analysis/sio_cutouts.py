@@ -21,4 +21,4 @@ for line, freq, spw in (
         cutout = vcube.subcube_from_ds9region(pyregion.open(rpath('siomaserbox.reg')))
         slab = cutout.spectral_slab(35*u.km/u.s, 75*u.km/u.s)
 
-        slab.write('siocutouts/{0}_cutout.image.pbcor.fits'.format(output))
+        slab.write('siocutouts/{0}_cutout.image.pbcor.fits'.format(output), overwrite=True)

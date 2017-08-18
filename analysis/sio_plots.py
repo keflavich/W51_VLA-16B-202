@@ -91,6 +91,7 @@ ra.set_ticks(exclude_overlapping=True)
 dec.ticklabels.set_fontsize(tick_fontsize)
 dec.set_ticks(exclude_overlapping=True)
 
+epoch = 2
 line = 'SiO_v=2'
 marker = 'o'
 
