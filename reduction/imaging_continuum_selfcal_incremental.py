@@ -141,6 +141,11 @@ for field in field_list:
         print(stats)
         ia.close()
 
+        outputvis = selfcal_vis.replace(".ms", "_{1}_selfcal{0}.ms".format(iternum, field_nospace))
+        split(vis=selfcal_vis, outputvis=outputvis, field=field,
+              datacolumn='corrected')
+        selfcal_vis = outputvis
+
 
 
 for field in field_list:
