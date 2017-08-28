@@ -30,7 +30,7 @@ for cvis in vis:
         split(vis=cvis, outputvis="cont_"+cvis, spw=contspw)
 
 cont_vises = ["cont_"+vv for vv in vis]
-cont_vis = 'continuum_concatenated.ms'
+cont_vis = 'continuum_concatenated_incremental.ms'
 
 if not os.path.exists(cont_vis):
     assert concat(vis=cont_vises, concatvis=cont_vis)
@@ -40,6 +40,8 @@ selfcal_vis = cont_vis
 imsize = 7680
 
 mask = None
+
+caltables = []
 
 thresholds = {'W51e2w': (5,2.5,1.5,1.0,1.0,1.0,0.5,0.25,0.25,0.25,0.25,0.25,0.25),
               'W51 North': (2.5,1.5,1.0,1.0,1.0,1.0,0.5,0.5,0.5,0.5,0.5,0.5,0.5),
@@ -64,7 +66,7 @@ for field in field_list:
                                                                 ]:
         threshold = threshold.format(thresholds[field][iternum])
         field_nospace = field.replace(" ","_")
-        output = myimagebase = imagename = '{0}_QbandAarray_cont_spws_continuum_cal_clean_2terms_robust0_wproj_selfcal{1}'.format(field_nospace, iternum)
+        output = myimagebase = imagename = '{0}_QbandAarray_cont_spws_continuum_cal_clean_2terms_robust0_wproj_incrementalselfcal{1}'.format(field_nospace, iternum)
 
         if os.path.exists(imagename+".image.tt0"):
             mask = 'clean_mask_{0}_{1}.mask'.format(iternum, field_nospace)
@@ -114,7 +116,9 @@ for field in field_list:
                      solint='{0},16ch'.format(solint), combine='scan',
                      field=field, refant='ea07')
 
-        applycal(vis=selfcal_vis, field=field, gaintable=[caltable],
+        caltables.append(caltable)
+
+        applycal(vis=selfcal_vis, field=field, gaintable=caltables,
                  interp="linear", applymode='calonly', calwt=True)
 
         cleanimage = myimagebase+'.image.tt0'
