@@ -10,35 +10,7 @@ antennae = ["ea01", "ea02", "ea03", "ea04", "ea05", "ea06", "ea07", "ea08",
 
 sb = 2
 
-for corr in ('RR','LL'):
-    for field in fields:
-        plotms(vis=vis, field=field, xaxis='uvdist', yaxis='amp', avgtime='100000',
-               spw=contspw,
-               correlation=corr,
-               avgchannel='1024', coloraxis='ant1', showgui=False,
-               plotfile='sb{sb}_amp_vs_uvdist_{0}_{1}.png'.format(field.replace(" ","_"),
-                                                                  corr,
-                                                                  sb=sb),
-               overwrite=True)
+from diagnostic_plots import diagnostic_plots
 
-        for antenna in antennae:
-            plotms(vis=vis, field=field, antenna=antenna, xaxis='freq', yaxis='amp', avgtime='100000',
-                   spw=contspw,
-                   correlation=corr,
-                   avgchannel='8', coloraxis='ant2', showgui=False,
-                   plotfile='sb{sb}_amp_vs_freq_{0}_{1}_{2}.png'.format(field.replace(" ","_"),
-                                                                        antenna,
-                                                                        corr,
-                                                                        sb=sb),
-                   overwrite=True)
-
-    for antenna in antennae:
-        plotms(vis=vis, antenna=antenna, xaxis='time', yaxis='amp', avgtime='30',
-               spw=contspw,
-               correlation=corr,
-               avgchannel='1024', coloraxis='ant2', showgui=False,
-               plotfile='sb{sb}_amp_vs_time_{0}_{1}.png'.format(antenna, corr,
-                                                                sb=sb),
-               overwrite=True)
-
-
+diagnostic_plots(vis=vis, fields=fields, contspw=contspw, antennae=antennae,
+                 sb=sb)

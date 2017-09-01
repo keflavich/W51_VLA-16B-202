@@ -5,3 +5,11 @@ flagdata(vis=vis, antenna='ea22', spw='50', correlation='LL', mode='manual',
          action='apply')
 flagdata(vis=vis, antenna='ea11', spw='42~43GHz', correlation='LL', mode='manual',
          action='apply')
+flagdata(vis=vis, antenna='ea03', spw='42~44GHz', correlation='LL', mode='manual',
+         action='apply')
+flagdata(vis=vis, antenna='ea17', spw='45~46GHz', correlation='RR',
+         mode='manual', action='apply')
+
+# bad phases in baseband B2D2
+flagdata(vis=vis, antenna='ea01', spw='50~64', mode='manual', action='apply')
+flagdata(vis=vis, antenna='ea26', spw='50~64', mode='manual', action='apply')
