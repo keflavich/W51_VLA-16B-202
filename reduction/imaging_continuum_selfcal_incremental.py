@@ -37,9 +37,7 @@ if not os.path.exists(cont_vis):
 
 selfcal_vis = cont_vis
 
-imsize = 7680
-
-mask = None
+imsize = 8000
 
 caltables = []
 
@@ -47,26 +45,73 @@ thresholds = {'W51e2w': (5,2.5,1.5,1.0,1.0,1.0,0.5,0.25,0.25,0.25,0.25,0.25,0.25
               'W51 North': (2.5,1.5,1.0,1.0,1.0,1.0,0.5,0.5,0.5,0.5,0.5,0.5,0.5),
              }
 
+
 for field in field_list:
+    field_nospace = field.replace(" ","_")
+
+    # create a dirty image for masking
+    imagename = '{0}_QbandAarray_cont_spws_continuum_cal_dirty_2terms_robust0'.format(field_nospace)
+    if not os.path.exists('{0}.image.tt0.pbcor.fits'.format(imagename)):
+        tclean(vis=selfcal_vis,
+               imagename=imagename,
+               field=field,
+               spw='',
+               weighting='briggs',
+               robust=0.0,
+               imsize=imsize,
+               cell=['0.01 arcsec'],
+               threshold='1 Jy',
+               niter=0,
+               #gridder='wproject',
+               gridder='standard',
+               #wprojplanes=32,
+               specmode='mfs',
+               deconvolver='mtmfs',
+               outframe='LSRK',
+               savemodel='none',
+               scales=[0,3,9],
+               nterms=2,
+               selectdata=True,
+              )
+        makefits(imagename)
+
+    dirtyimage = imagename+'.image.tt0'
+    ia.open(dirtyimage)
+    ia.calcmask(mask=dirtyimage+" > 0.0025",
+                name='dirty_mask_{0}'.format(field_nospace))
+
+    ia.close()
+    makemask(mode='copy', inpimage=dirtyimage,
+             inpmask=dirtyimage+":dirty_mask_{0}".format(field_nospace),
+             output='dirty_mask_{0}.mask'.format(field_nospace),
+             overwrite=True)
+    mask = 'dirty_mask_{0}.mask'.format(field_nospace)
+    exportfits(mask, mask+'.fits', dropdeg=True, overwrite=True)
+
+
+
 
     # must iterate over fields separately because the mask name is being set and reset
-    for iternum, nterms, threshold, caltype, calmode, solint in [(0, 2, '{0} mJy','phase','p', '30s'), # first attempt was 5; too conservative
-                                                                 (1, 2, '{0} mJy','phase','p', '30s'),
-                                                                 (2, 2, '{0} mJy','phase','p', '30s'),
-                                                                 (3, 2, '{0} mJy','phase','p', 'int'),
-                                                                 (4, 2, '{0} mJy','phase','p', 'int'), # mostly a sanity check
-                                                                 (5, 2, '{0} mJy','ampphase','ap', '120s'),
-                                                                 (6, 2, '{0} mJy','ampphase','ap', '120s'),
-                                                                 (7, 2, '{0} mJy','ampphase','ap', '120s'),
-                                                                 (8, 2, '{0} mJy','ampphase','ap', '30s'),
-                                                                 (9, 2, '{0} mJy','ampphase','ap', 'int'),
-                                                                 (10, 3, '{0} mJy','bandpass', 'ap', 'inf'),
-                                                                 (11, 3, '{0} mJy','bandpass', 'ap', 'inf'),
-                                                                 (12, 3, '{0} mJy','bandpass', 'ap', 'inf'),
+    for iternum, nterms, threshold, caltype, calmode, solint in [(0, 2, '{0} mJy','amp','a', 'inf'),
+                                                                 (1, 2, '{0} mJy','bandpass', 'ap', 'inf'),
+                                                                 (2, 2, '{0} mJy','ampphase','ap', 'inf'),
+                                                                 (3, 2, '{0} mJy','phase','p', 'inf'),
+                                                                 (4, 2, '{0} mJy','phase','p', '30s'),
+                                                                 (5, 2, '{0} mJy','phase','p', 'int'),
+                                                                 (6, 3, '{0} mJy','bandpass', 'ap', 'inf'),
+                                                                 #(5, 2, '{0} mJy','ampphase','ap', '120s'),
+                                                                 #(6, 2, '{0} mJy','ampphase','ap', '120s'),
+                                                                 #(7, 2, '{0} mJy','ampphase','ap', '120s'),
+                                                                 #(8, 2, '{0} mJy','ampphase','ap', '30s'),
+                                                                 #(9, 2, '{0} mJy','ampphase','ap', 'int'),
+                                                                 #(10, 3, '{0} mJy','bandpass', 'ap', 'inf'),
+                                                                 #(11, 3, '{0} mJy','bandpass', 'ap', 'inf'),
+                                                                 #(12, 3, '{0} mJy','bandpass', 'ap', 'inf'),
                                                                 ]:
         threshold = threshold.format(thresholds[field][iternum])
-        field_nospace = field.replace(" ","_")
-        output = myimagebase = imagename = '{0}_QbandAarray_cont_spws_continuum_cal_clean_2terms_robust0_wproj_incrementalselfcal{1}'.format(field_nospace, iternum)
+        output = myimagebase = imagename = '{0}_QbandAarray_cont_spws_continuum_cal_clean_{2}terms_robust0_incrementalselfcal{1}'.format(field_nospace, iternum, nterms)
+
+        print("Working on {0}".format(myimagebase))
 
         if os.path.exists(imagename+".image.tt0"):
             mask = 'clean_mask_{0}_{1}.mask'.format(iternum, field_nospace)
@@ -92,8 +137,9 @@ for field in field_list:
                cell=['0.01 arcsec'],
                threshold=threshold,
                niter=100000,
-               gridder='wproject',
-               wprojplanes=32,
+               #gridder='wproject',
+               gridder='standard',
+               #wprojplanes=32,
                specmode='mfs',
                deconvolver='mtmfs',
                outframe='LSRK',
@@ -110,11 +156,13 @@ for field in field_list:
         if 'phase' in caltype:
             gaincal(vis=selfcal_vis, caltable=caltable, solint=solint,
                     combine='spw',
-                    gaintype='G', field=field, calmode=calmode)
+                    gaintype='G', field=field, calmode=calmode,
+                    solnorm=True)
         elif 'bandpass' in caltype:
             bandpass(vis=selfcal_vis, caltable=caltable,
                      solint='{0},16ch'.format(solint), combine='scan',
-                     field=field, refant='ea07')
+                     field=field, refant='ea07',
+                     solnorm=True)
 
         caltables.append(caltable)
 
@@ -148,30 +196,30 @@ for field in field_list:
 
 
 
-for field in field_list:
-    field_nospace = field.replace(" ","_")
-    output = myimagebase = imagename = '{0}_QbandAarray_cont_spws_continuum_cal_clean_2terms_robust0_wproj_selfcal{1}'.format(field_nospace, iternum+1)
-
-    for suffix in ('pb', 'weight', 'sumwt', 'psf', 'model', 'mask',
-                   'image', 'residual'):
-        os.system('rm -rf {0}.{1}'.format(output, suffix))
-
-    tclean(vis=selfcal_vis,
-           imagename=imagename,
-           field=field,
-           spw='',
-           weighting='briggs',
-           robust=0.0,
-           imsize=imsize,
-           cell=['0.01 arcsec'],
-           threshold=threshold,
-           niter=10000,
-           gridder='wproject',
-           wprojplanes=32,
-           specmode='mfs',
-           deconvolver='mtmfs',
-           outframe='LSRK',
-           savemodel='modelcolumn',
-           nterms=2,
-           selectdata=True)
-    makefits(myimagebase)
+#for field in field_list:
+#    field_nospace = field.replace(" ","_")
+#    output = myimagebase = imagename = '{0}_QbandAarray_cont_spws_continuum_cal_clean_2terms_robust0_wproj_selfcal{1}'.format(field_nospace, iternum+1)
+#
+#    for suffix in ('pb', 'weight', 'sumwt', 'psf', 'model', 'mask',
+#                   'image', 'residual'):
+#        os.system('rm -rf {0}.{1}'.format(output, suffix))
+#
+#    tclean(vis=selfcal_vis,
+#           imagename=imagename,
+#           field=field,
+#           spw='',
+#           weighting='briggs',
+#           robust=0.0,
+#           imsize=imsize,
+#           cell=['0.01 arcsec'],
+#           threshold=threshold,
+#           niter=10000,
+#           gridder='wproject',
+#           wprojplanes=32,
+#           specmode='mfs',
+#           deconvolver='mtmfs',
+#           outframe='LSRK',
+#           savemodel='modelcolumn',
+#           nterms=2,
+#           selectdata=True)
+#    makefits(myimagebase)
