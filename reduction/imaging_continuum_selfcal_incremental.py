@@ -157,11 +157,13 @@ for field in field_list:
             gaincal(vis=selfcal_vis, caltable=caltable, solint=solint,
                     combine='spw',
                     gaintype='G', field=field, calmode=calmode,
+                    gaintable=caltables,
                     solnorm=True)
         elif 'bandpass' in caltype:
             bandpass(vis=selfcal_vis, caltable=caltable,
                      solint='{0},16ch'.format(solint), combine='scan',
                      field=field, refant='ea07',
+                     gaintable=caltables,
                      solnorm=True)
 
         caltables.append(caltable)
