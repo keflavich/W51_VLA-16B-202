@@ -159,8 +159,9 @@ for field in field_list:
                            'image{tt}.pbcor',
                            'alpha', ):
                 rmfile = "{0}.{1}".format(output, suffix).format(tt=ttsuffix)
-                print("Removing {0}".format(rmfile))
-                os.system('rm -rf {0}'.format(rmfile))
+                if os.path.exists(rmfile):
+                    print("Removing {0}".format(rmfile))
+                    os.system('rm -rf {0}'.format(rmfile))
 
         tclean(vis=selfcal_vis,
                imagename=imagename,
