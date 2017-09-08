@@ -93,11 +93,12 @@ for field in field_list:
 
     exportfits(dirtyimage, dirtyimage+".fits", overwrite=True)
     reg = pyregion.open('cleanbox_regions_{0}.reg'.format(field_nospace))
-    imghdu = fits.open(dirtyimage+".fits")[0]
-    mask = reg.get_mask(header=imghdu.header, shape=imghdu.data.squeeze())[None, None, :, :]
-    imghdu.data = mask.astype('int16')
-    imghdu.header['BITPIX'] = 16
-    imghdu.writeto('cleanbox_mask_{0}.fits'.format(field_nospace), clobber=True)
+    imghdu = fits.open(dirtyimage+".pbcor.fits")[0]
+    imghdu2 = fits.open(dirtyimage+".fits")[0]
+    mask = reg.get_mask(imghdu)[None, None, :, :]
+    imghdu2.data = mask.astype('int16')
+    imghdu2.header['BITPIX'] = 16
+    imghdu2.writeto('cleanbox_mask_{0}.fits'.format(field_nospace), clobber=True)
     cleanbox_mask_image = 'cleanbox_mask_{0}.image'.format(field_nospace)
     importfits(fitsimage='cleanbox_mask_{0}.fits'.format(field_nospace),
                imagename=cleanbox_mask_image,
@@ -117,6 +118,8 @@ for field in field_list:
              inpmask=cleanbox_mask_image+":cleanbox_mask_{0}".format(field_nospace),
              output=cleanbox_mask,
              overwrite=True)
+
+    mask = cleanbox_mask_image
 
 
 
@@ -144,7 +147,7 @@ for field in field_list:
         print("Working on {0}".format(myimagebase))
 
         if os.path.exists(imagename+".image.tt0"):
-            mask = 'clean_mask_{0}_{1}.mask'.format(iternum, field_nospace)
+            #mask = 'clean_mask_{0}_{1}.mask'.format(iternum, field_nospace)
             outputvis = selfcal_vis.replace(".ms", "_{1}_selfcal{0}.ms".format(iternum, field_nospace))
             selfcal_vis = outputvis
             print("Skipping {0}".format(imagename))
@@ -203,18 +206,18 @@ for field in field_list:
         applycal(vis=selfcal_vis, field=field, gaintable=caltables,
                  interp="linear", applymode='calonly', calwt=True)
 
-        cleanimage = myimagebase+'.image.tt0'
-        ia.open(cleanimage)
-        ia.calcmask(mask=cleanimage+" > {0}".format(float(threshold.split()[0])/1000),
-                    name='clean_mask_iter{0}_{1}'.format(iternum, field_nospace))
+        # cleanimage = myimagebase+'.image.tt0'
+        # ia.open(cleanimage)
+        # ia.calcmask(mask=cleanimage+" > {0}".format(float(threshold.split()[0])/1000),
+        #             name='clean_mask_iter{0}_{1}'.format(iternum, field_nospace))
 
-        ia.close()
-        makemask(mode='copy', inpimage=cleanimage,
-                 inpmask=cleanimage+":clean_mask_iter{0}_{1}".format(iternum, field_nospace),
-                 output='clean_mask_{0}_{1}.mask'.format(iternum, field_nospace),
-                 overwrite=True)
-        mask = 'clean_mask_{0}_{1}.mask'.format(iternum, field_nospace)
-        exportfits(mask, mask+'.fits', dropdeg=True, overwrite=True)
+        # ia.close()
+        # makemask(mode='copy', inpimage=cleanimage,
+        #          inpmask=cleanimage+":clean_mask_iter{0}_{1}".format(iternum, field_nospace),
+        #          output='clean_mask_{0}_{1}.mask'.format(iternum, field_nospace),
+        #          overwrite=True)
+        # mask = 'clean_mask_{0}_{1}.mask'.format(iternum, field_nospace)
+        # exportfits(mask, mask+'.fits', dropdeg=True, overwrite=True)
 
         ia.open(myimagebase+".model.tt0")
         stats = ia.statistics()
