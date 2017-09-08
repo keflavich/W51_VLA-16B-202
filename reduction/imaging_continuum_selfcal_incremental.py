@@ -4,6 +4,9 @@ if 'field_list' not in locals():
 if isinstance(field_list, str):
     raise TypeError("Make field list a list or tuple")
 
+from astropy.io import fits
+import pyregion
+
 def makefits(myimagebase):
     impbcor(imagename=myimagebase+'.image.tt0', pbimage=myimagebase+'.pb.tt0', outfile=myimagebase+'.image.tt0.pbcor', overwrite=True) # perform PBcorr
     exportfits(imagename=myimagebase+'.image.tt0.pbcor', fitsimage=myimagebase+'.image.tt0.pbcor.fits', dropdeg=True, overwrite=True) # export the corrected image
@@ -88,6 +91,32 @@ for field in field_list:
     mask = 'dirty_mask_{0}.mask'.format(field_nospace)
     exportfits(mask, mask+'.fits', dropdeg=True, overwrite=True)
 
+    exportfits(dirtyimage, dirtyimage+".fits", overwrite=True)
+    reg = pyregion.open('cleanbox_regions_{0}.reg'.format(field_nospace))
+    imghdu = fits.open(dirtyimage+".fits")[0]
+    mask = reg.get_mask(header=imghdu.header, shape=imghdu.data.squeeze())[None, None, :, :]
+    imghdu.data = mask.astype('int16')
+    imghdu.header['BITPIX'] = 16
+    imghdu.writeto('cleanbox_mask_{0}.fits'.format(field_nospace), clobber=True)
+    cleanbox_mask_image = 'cleanbox_mask_{0}.image'.format(field_nospace)
+    importfits(fitsimage='cleanbox_mask_{0}.fits'.format(field_nospace),
+               imagename=cleanbox_mask_image,
+               overwrite=True)
+    #ia.open(cleanbox_mask_image)
+    #im = ia.adddegaxes(spectral=True, stokes='I', overwrite=True)
+    #ia.close()
+    #os.system('rm -rf {0}'.format(cleanbox_mask_image))
+    #os.system('mv tmp_{0} {0}'.format(cleanbox_mask_image))
+    ia.open(cleanbox_mask_image)
+    ia.calcmask(mask=cleanbox_mask_image+" > 0.5",
+                name='cleanbox_mask_{0}'.format(field_nospace))
+
+    ia.close()
+    cleanbox_mask = 'cleanbox_mask_{0}.mask'.format(field_nospace)
+    makemask(mode='copy', inpimage=cleanbox_mask_image,
+             inpmask=cleanbox_mask_image+":cleanbox_mask_{0}".format(field_nospace),
+             output=cleanbox_mask,
+             overwrite=True)
 
 
 
@@ -99,6 +128,7 @@ for field in field_list:
                                                                  (4, 2, '{0} mJy','phase','p', '30s'),
                                                                  (5, 2, '{0} mJy','phase','p', 'int'),
                                                                  (6, 3, '{0} mJy','bandpass', 'ap', 'inf'),
+                                                                 (7, 3, '{0} mJy','ampphase', 'ap', 'inf'),
                                                                  #(5, 2, '{0} mJy','ampphase','ap', '120s'),
                                                                  #(6, 2, '{0} mJy','ampphase','ap', '120s'),
                                                                  #(7, 2, '{0} mJy','ampphase','ap', '120s'),
@@ -115,6 +145,8 @@ for field in field_list:
 
         if os.path.exists(imagename+".image.tt0"):
             mask = 'clean_mask_{0}_{1}.mask'.format(iternum, field_nospace)
+            outputvis = selfcal_vis.replace(".ms", "_{1}_selfcal{0}.ms".format(iternum, field_nospace))
+            selfcal_vis = outputvis
             print("Skipping {0}".format(imagename))
             continue
 
