@@ -147,13 +147,13 @@ for field in field_list:
     for iternum, nterms, threshold, caltype, calmode, solint, combine in [(0, 2, '{0} mJy','amp','a', 'inf', 'spw',),
                                                                           (1, 2, '{0} mJy','bandpass', 'ap', 'inf', '',),
                                                                           (2, 2, '{0} mJy','amp','a', '240s', 'scan',),
-                                                                          (2, 2, '{0} mJy','ampphase','ap', 'inf', '',),
-                                                                          (3, 2, '{0} mJy','phase','p', 'inf', '',),
-                                                                          (4, 2, '{0} mJy','phase','p', '30s', '',),
-                                                                          (5, 2, '{0} mJy','phase','p', 'int', '',),
-                                                                          (6, 3, '{0} mJy','bandpass', 'ap', 'inf', '',),
-                                                                          (7, 3, '{0} mJy','ampphase', 'ap', 'inf', '',),
+                                                                          (3, 2, '{0} mJy','ampphase','ap', 'inf', '',),
+                                                                          (4, 2, '{0} mJy','phase','p', 'inf', '',),
+                                                                          (5, 2, '{0} mJy','phase','p', '30s', '',),
+                                                                          (6, 2, '{0} mJy','phase','p', 'int', '',),
+                                                                          (7, 3, '{0} mJy','bandpass', 'ap', 'inf', '',),
                                                                           (8, 3, '{0} mJy','ampphase', 'ap', 'inf', '',),
+                                                                          (9, 3, '{0} mJy','ampphase', 'ap', 'inf', '',),
                                                                           #(5, 2, '{0} mJy','ampphase','ap', '120s', '',),
                                                                           #(6, 2, '{0} mJy','ampphase','ap', '120s', '',),
                                                                           #(7, 2, '{0} mJy','ampphase','ap', '120s', '',),
@@ -177,6 +177,17 @@ for field in field_list:
             calinfo[iternum] = {'combine':combine,}
             print("Skipping {0}".format(imagename))
             continue
+
+        if len(caltables) > 0:
+            print("Applying caltables {0}".format(caltables))
+            applycal(vis=selfcal_vis,
+                     field=field,
+                     gaintable=caltables,
+                     spwmap=[[0]*nspws if calinfo[ii]['combine']=='spw' else [] for ii in range(len(caltables))],
+                     interp='linear,linear', #['linearperobs,linear' if combine=='spw' else 'linearperobs,linear']*len(caltables),
+                     applymode='calonly', calwt=True)
+
+
 
         for ttsuffix in ('.tt0', '.tt1', '.tt2'):
             for suffix in ('pb{tt}', 'weight', 'sumwt{tt}', 'psf{tt}',
@@ -234,13 +245,6 @@ for field in field_list:
         caltables.append(caltable)
         calinfo[iternum] = {'combine':combine,}
         print("Calibration Information exists for these: {0}".format(calinfo.keys()))
-
-        applycal(vis=selfcal_vis,
-                 field=field,
-                 gaintable=caltables,
-                 spwmap=[[0]*nspws if calinfo[ii]['combine']=='spw' else [] for ii in range(len(caltables))],
-                 interp='linear,linear', #['linearperobs,linear' if combine=='spw' else 'linearperobs,linear']*len(caltables),
-                 applymode='calonly', calwt=True)
 
         # cleanimage = myimagebase+'.image.tt0'
         # ia.open(cleanimage)
