@@ -72,6 +72,8 @@ msmd.close()
 for field in field_list:
     field_nospace = field.replace(" ","_")
 
+    clearcal(vis=selfcal_vis, field=field_nospace)
+
     # create a dirty image for masking
     imagename = '{0}_QbandAarray_cont_spws_continuum_cal_dirty_2terms_robust0'.format(field_nospace)
     if not os.path.exists('{0}.image.tt0.pbcor.fits'.format(imagename)):
@@ -150,10 +152,11 @@ for field in field_list:
                                                                           (3, 2, '{0} mJy','ampphase','ap', 'inf', '',),
                                                                           (4, 2, '{0} mJy','phase','p', 'inf', '',),
                                                                           (5, 2, '{0} mJy','phase','p', '30s', '',),
-                                                                          (6, 2, '{0} mJy','phase','p', 'int', '',),
-                                                                          (7, 3, '{0} mJy','bandpass', 'ap', 'inf', '',),
-                                                                          (8, 3, '{0} mJy','ampphase', 'ap', 'inf', '',),
+                                                                          (6, 2, '{0} mJy','phase','p', '30s', '',),
+                                                                          (7, 2, '{0} mJy','ampphase', 'ap', 'inf', '',),
+                                                                          (8, 2, '{0} mJy','ampphase', 'ap', 'inf', '',),
                                                                           (9, 3, '{0} mJy','ampphase', 'ap', 'inf', '',),
+                                                                          (10, 3, '{0} mJy','ampphase', 'ap', 'inf', '',),
                                                                           #(5, 2, '{0} mJy','ampphase','ap', '120s', '',),
                                                                           #(6, 2, '{0} mJy','ampphase','ap', '120s', '',),
                                                                           #(7, 2, '{0} mJy','ampphase','ap', '120s', '',),
@@ -167,19 +170,28 @@ for field in field_list:
         output = myimagebase = imagename = '{0}_QbandAarray_cont_spws_continuum_cal_clean_{2}terms_robust0_incrementalselfcal{1}'.format(field_nospace, iternum, nterms)
 
         print("Working on {0}".format(myimagebase))
+        casalog.post("Working on {0}".format(myimagebase), "INFO", "IncrementalSelfcalScript")
 
         if os.path.exists(imagename+".image.tt0"):
             #mask = 'clean_mask_{0}_{1}.mask'.format(iternum, field_nospace)
             #outputvis = selfcal_vis.replace(".ms", "_{1}_selfcal{0}.ms".format(iternum, field_nospace))
             #selfcal_vis = outputvis
             caltable = '{2}_{1}_{0}.cal'.format(field_nospace, iternum, caltype)
+            if not os.path.exists(caltable):
+                raise ValueError("Calibration table {1} does not exist but image does.  Remove images with "
+                                 "suffix {0}".format(imagename, caltable))
             caltables.append(caltable)
             calinfo[iternum] = {'combine':combine,}
+            casalog.post("Skipping {0}".format(myimagebase), "INFO", "IncrementalSelfcalScript")
+            casalog.post("caltables set to {0}, calinfo set to {1}"
+                         .format(caltables, calinfo), "INFO",
+                         "IncrementalSelfcalScript")
             print("Skipping {0}".format(imagename))
             continue
 
         if len(caltables) > 0:
             print("Applying caltables {0}".format(caltables))
+            casalog.post("Applying caltables {0}".format(caltables), "INFO", "IncrementalSelfcalScript")
             applycal(vis=selfcal_vis,
                      field=field,
                      gaintable=caltables,
@@ -242,9 +254,14 @@ for field in field_list:
                      interp='linear,linear',
                      solnorm=True)
 
+        if not os.path.exists(caltable):
+            casalog.post("Calibration table {0} does not exist".format(caltable), "ERROR", "IncrementalSelfcalScript")
+            raise ValueError("Calibration table {0} does not exist".format(caltable))
+
         caltables.append(caltable)
         calinfo[iternum] = {'combine':combine,}
         print("Calibration Information exists for these: {0}".format(calinfo.keys()))
+        casalog.post("Calibration Information exists for these: {0}".format(calinfo.keys()), "INFO", "IncrementalSelfcalScript")
 
         # cleanimage = myimagebase+'.image.tt0'
         # ia.open(cleanimage)
