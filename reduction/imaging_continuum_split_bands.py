@@ -18,7 +18,6 @@ def makefits(myimagebase):
 
 
 selfcal_vis = cont_vis = 'continuum_concatenated.ms'
-selfcal_vis = cont_vis = 'continuum_concatenated_copy_to_remove.ms'
 
 iternum = "LAST"
 
@@ -29,15 +28,16 @@ ms.close()
 imsize = 7680
 
 for field in field_list:
-    for frequency_range in ('40-45', '45-50'):
-        minfreq, maxfreq = map(float, frequency_range.split("-"))
+    #for frequency_range in ('40-45', '45-50'):
+    #    minfreq, maxfreq = map(float, frequency_range.split("-"))
+    for minfreq, maxfreq in [(42,43), (43,44), (44,45), (45,46), (46,47), (47,48), (48,49), (49,50)]:
 
         spws = [spwid for spwid in mssum
                 if ((mssum[spwid]['Chan1Freq'] > minfreq*1e9) and
                     (mssum[spwid]['Chan1Freq'] < maxfreq*1e9))]
 
         field_nospace = field.replace(" ","_")
-        output = myimagebase = imagename = '{0}_QbandAarray_cont_spws_continuum_cal_clean_2terms_robust0_wproj_selfcal{1}_{2}'.format(field_nospace, iternum, frequency_range)
+        output = myimagebase = imagename = '{0}_QbandAarray_cont_spws_continuum_cal_clean_2terms_robust0_wproj_selfcal{1}_{2}-{3}'.format(field_nospace, iternum, minfreq, maxfreq)
 
         for ttsuffix in ('.tt0', '.tt1', 'tt2'):
             for suffix in ('pb{tt}', 'weight', 'sumwt{tt}', 'psf{tt}',
