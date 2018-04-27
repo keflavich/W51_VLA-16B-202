@@ -17,7 +17,7 @@ def makefits(myimagebase):
     exportfits(imagename=myimagebase+'.alpha.error', fitsimage=myimagebase+'.alpha.error.fits', dropdeg=True, overwrite=True)
 
 
-selfcal_vis = cont_vis = 'continuum_concatenated.ms'
+selfcal_vis = cont_vis = 'continuum_concatenated_incremental.ms'
 
 iternum = "LAST"
 
