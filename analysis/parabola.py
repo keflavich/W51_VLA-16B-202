@@ -22,6 +22,23 @@ if not os.path.exists('W51e2w_ALMAB3_cutout.fits'):
 else:
     img_95ghz = fits.getdata('W51e2w_ALMAB3_cutout.fits')
 
+if not os.path.exists('W51e2w_ALMAB6_cutout.fits'):
+    fh = fits.open('/Users/adam/work/w51/alma/FITS/longbaseline/W51e2_cont_briggsSC_tclean_allspw.image.fits')
+    ww = wcs.WCS(fh[0].header).celestial
+    pr0 = regions.read_ds9('/Users/adam/work/w51/vla_q/regions/e2w_ellipse.reg')[0].to_pixel(ww)
+    pr0.width *= 2.5
+    pr0.height *= 2.5
+    msk = pr0.to_mask()
+    img_224ghz = msk.multiply(fh[0].data.squeeze())
+
+    header = fh[0].header
+    ww_cutout = ww[msk.bbox.slices]
+    header.update(ww_cutout.to_header())
+    fits.PrimaryHDU(data=img_224ghz, header=header).writeto('W51e2w_ALMAB6_cutout.fits', overwrite=True)
+else:
+    img_224ghz = fits.getdata('W51e2w_ALMAB6_cutout.fits')
+
+
 if not os.path.exists('W51e2w_VLA_Q_cutout.fits'):
     fh = fits.open('/Users/adam/work/w51/vla_q/FITS/W51e2w_QbandAarray_cont_spws_continuum_cal_clean_2terms_robust0_wproj_selfcal9.image.tt0.pbcor.fits')
     ww = wcs.WCS(fh[0].header).celestial
