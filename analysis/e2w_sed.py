@@ -1,4 +1,5 @@
 from astropy.io import fits
+from astropy import wcs
 import pylab as pl
 import regions
 import numpy as np
