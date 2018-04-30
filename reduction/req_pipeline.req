@@ -9,7 +9,7 @@ MEM="30gb"
 VMEM="100gb"
 OBSDATE="REPLACETHIS"
 WORK_DIR='/lustre/aginsbur/w51/vla/16B-202/'${OBSDATE}
-COMMAND='/lustre/aginsbur/w51/vla/16B-202/reduction_scripts/run_pipeline.sh'
+COMMAND='/lustre/aginsbur/16B-202_W51QKa/W51_VLA-16B-202/reduction/run_pipeline.sh'
 
 #
 # These are optional
