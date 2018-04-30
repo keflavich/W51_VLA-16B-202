@@ -6,6 +6,9 @@ import numpy as np
 from astropy import units as u
 import radio_beam
 
+import warnings
+warnings.filterwarnings('ignore', category=wcs.FITSFixedWarning, append=True)
+
 fns = {95*u.GHz: '/lustre/aginsbur/w51/2017.1.00293.S/2017.1.00293.S_2017_11_29T13_39_36.232/SOUS_uid___A001_X1290_X4/GOUS_uid___A001_X1290_X5/MOUS_uid___A001_X1290_X6/products/w51e2_sci.spw0_1_2_3_4_5_6_7_8_9_10_11_12_13_14_15_16_17_18_19.mfs.I.manual.image.tt0.pbcor.fits',
        42.5*u.GHz: 'W51e2w_QbandAarray_cont_spws_continuum_cal_clean_2terms_robust0_wproj_selfcalLAST_42-43.image.tt0.pbcor.fits',
        43.5*u.GHz: 'W51e2w_QbandAarray_cont_spws_continuum_cal_clean_2terms_robust0_wproj_selfcalLAST_43-44.image.tt0.pbcor.fits',
@@ -53,3 +56,7 @@ fig2.clf()
 ax = fig2.gca()
 
 ax.plot(u.Quantity(list(sed.keys())), u.Quantity(list(sed.values())), 's')
+
+print(sed)
+sed_ = {x.value:y.value for x,y in sed.items()}
+print(sed_)
