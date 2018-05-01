@@ -17,8 +17,11 @@ def check_intents(vis,
 
     match = obs_mode == bad_intent
     if not match.any():
+        OK = True
         print("No matches to intent {0} found.".format(bad_intent))
         #raise ValueError("No matches to intent {0} found.".format(bad_intent))
+    else:
+        OK = False
 
     bad_state_id_nums = np.where(match)
 
@@ -40,7 +43,7 @@ def check_intents(vis,
 
     field_intents = {fieldnames[fid]:obs_mode[sid] for fid,sid in zip(field_id_data, state_id_data)}
 
-    return matched_fields_badintents, field_intents
+    return OK, matched_fields_badintents, field_intents
 
 
 def fix_intents(vis,

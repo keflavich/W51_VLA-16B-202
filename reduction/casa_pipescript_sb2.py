@@ -15,8 +15,8 @@ try:
         fix_intents.fix_intents(vis)
     except ValueError:
         pass
-    matched_fields_badintents, field_intents = fix_intents.check_intents(vis)
-    assert matched_fields_badintents == {}
+    OK, matched_fields_badintents, field_intents = fix_intents.check_intents(vis)
+    assert OK
     clearcal(vis=vis)
     listobs(vis=vis, listfile=vis+".listobs.beforeimport", overwrite=True)
     hifv_importdata(vis=[vis], session=['session_1'])
