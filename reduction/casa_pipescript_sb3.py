@@ -10,16 +10,15 @@ context.set_state('ProjectSummary', 'telescope', 'EVLA')
 context.set_state('ProjectSummary', 'piname', 'Adam Ginsburg')
 context.set_state('ProjectSummary', 'proposal_title', 'W51 16B-202')
 try:
-    vis = '16B-202.sb32957824.eb33142274.57752.64119381944.ms'
+    vis = '16B-202.sb32957824.eb33142274.57752.64119381944'
+    hifv_importdata(vis=[vis], session=['session_1'])
+    vis = vis+'.ms'
     try:
         fix_intents.fix_intents(vis)
     except ValueError:
         pass
     OK, matched_fields_badintents, field_intents = fix_intents.check_intents(vis)
     assert OK
-    clearcal(vis=vis)
-    listobs(vis=vis, listfile=vis+".listobs.beforeimport", overwrite=True)
-    hifv_importdata(vis=[vis], session=['session_1'])
     listobs(vis=vis, listfile=vis+".listobs.afterimport", overwrite=True)
     #hifv_hanning(pipelinemode="automatic")
     hifv_flagdata(intents='*POINTING*,*FOCUS*,*ATMOSPHERE*,*SIDEBAND_RATIO*, *UNKNOWN*, *SYSTEM_CONFIGURATION*, *UNSPECIFIED#UNSPECIFIED*', hm_tbuff='1.5int')
