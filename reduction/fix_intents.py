@@ -1,4 +1,6 @@
 import numpy as np
+import casac
+tb = casac.casac().table()
 
 def check_intents(vis,
                   bad_intent='CALIBRATE_BANDPASS#UNSPECIFIED,CALIBRATE_FLUX#UNSPECIFIED',

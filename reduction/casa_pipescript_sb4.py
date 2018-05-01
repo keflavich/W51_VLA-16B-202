@@ -1,3 +1,5 @@
+import sys
+sys.path.append('.')
 import fix_intents
 
 __rethrow_casa_exceptions = True
