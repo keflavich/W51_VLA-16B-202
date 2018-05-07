@@ -45,7 +45,7 @@ contspw = '2,4,5,6,7,8,9,10,12,13,14,15,16,17,18,19,22,23,24,25,26,28,29,30,31,3
 
 for cvis in vis:
     if not os.path.exists("cont_"+cvis):
-        split(vis=cvis, outputvis="cont_"+cvis, spw=contspw, width=8)
+        split(vis=cvis, outputvis="cont_"+cvis, spw=contspw, width=16)
 
 cont_vises = ["cont_"+vv for vv in vis]
 cont_vis = 'continuum_concatenated_incremental.ms'
