@@ -55,14 +55,17 @@ if not os.path.exists(cont_vis):
 
 selfcal_vis = cont_vis
 
-imsize = 8000
-
 caltables = []
 calinfo = {}
 
-thresholds = {'W51e2w': (5,2.5,1.5,1.0,1.0,1.0,0.5,0.25,0.25,0.25,0.25,0.25,0.25),
+# don't clean too shallowly first time: it takes forever to fix.
+thresholds = {'W51e2w': (2.5,2.5,1.5,1.0,1.0,1.0,0.5,0.25,0.25,0.25,0.25,0.25,0.25),
               'W51 North': (2.5,1.5,1.0,1.0,1.0,1.0,0.5,0.5,0.5,0.5,0.5,0.5,0.5),
              }
+imsize = {'W51e2w': 256,
+          'W51 North': 1024}
+phasecenter = {'W51e2w': 'J2000 19h23m43.910 +14d30m34.593',
+               'W51 North': 'J2000 19h23m39.959 +14d31m06.687',}
 
 
 msmd.open(selfcal_vis)
@@ -83,7 +86,8 @@ for field in field_list:
                spw='',
                weighting='briggs',
                robust=0.0,
-               imsize=imsize,
+               phasecenter=phasecenter[field],
+               imsize=imsize[field],
                cell=['0.01 arcsec'],
                threshold='1 Jy',
                niter=0,
@@ -225,7 +229,8 @@ for field in field_list:
                spw='',
                weighting='briggs',
                robust=0.0,
-               imsize=imsize,
+               phasecenter=phasecenter[field],
+               imsize=imsize[field],
                cell=['0.01 arcsec'],
                threshold=threshold,
                niter=100000,
