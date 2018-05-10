@@ -43,15 +43,20 @@ vis = [#'16B-202.sb32532587.eb32875589.57663.07622001157.ms',
       ]
 contspw = '2,4,5,6,7,8,9,10,12,13,14,15,16,17,18,19,22,23,24,25,26,28,29,30,31,32,34,35,36,37,39,42,44,45,47,48,49,50,51,52,53,54,55,56,57,58,59,60,62,63,64'
 
-for cvis in vis:
-    if not os.path.exists("cont_"+cvis):
-        split(vis=cvis, outputvis="cont_"+cvis, spw=contspw, width=16)
+base_cont_vis = 'continuum_concatenated_incremental.ms'
 
-cont_vises = ["cont_"+vv for vv in vis]
-cont_vis = 'continuum_concatenated_incremental.ms'
+for field, field_nospace in (('W51e2w', 'W51e2w'),
+                             ('W51 North', 'W51North')):
+    for cvis in vis:
+        if not os.path.exists(field_nospace+"_cont_"+cvis):
+            split(vis=cvis, outputvis=field_nospace+"_cont_"+cvis, spw=contspw,
+                  width=16, field=field)
 
-if not os.path.exists(cont_vis):
-    assert concat(vis=cont_vises, concatvis=cont_vis)
+    cont_vises = [field_nospace+"_cont_"+vv for vv in vis]
+    cont_vis = field_nospace+'_'+base_cont_vis
+
+    if not os.path.exists(cont_vis):
+        assert concat(vis=cont_vises, concatvis=cont_vis)
 
 selfcal_vis = cont_vis
 
@@ -74,6 +79,8 @@ msmd.close()
 
 for field in field_list:
     field_nospace = field.replace(" ","_")
+
+    selfcal_vis = field_nospace + "_" + base_cont_vis
 
     clearcal(vis=selfcal_vis, field=field_nospace)
 
