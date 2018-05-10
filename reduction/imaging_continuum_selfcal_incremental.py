@@ -47,6 +47,8 @@ base_cont_vis = 'continuum_concatenated_incremental.ms'
 
 for field, field_nospace in (('W51e2w', 'W51e2w'),
                              ('W51 North', 'W51North')):
+    if field not in field_list:
+        continue
     for cvis in vis:
         if not os.path.exists(field_nospace+"_cont_"+cvis):
             split(vis=cvis, outputvis=field_nospace+"_cont_"+cvis, spw=contspw,
