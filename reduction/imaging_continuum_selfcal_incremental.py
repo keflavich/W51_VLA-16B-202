@@ -12,6 +12,7 @@ from applycal import applycal
 from tclean import tclean
 from exportfits import exportfits
 from importfits import importfits
+from casalog import casalog
 from impbcor import impbcor
 ia = iatool()
 msmd = msmdtool()
@@ -21,6 +22,8 @@ if 'field_list' not in locals():
     raise ValueError("Set field_list")
 if isinstance(field_list, str):
     raise TypeError("Make field list a list or tuple")
+
+casalog.post("Field list is: {0}".format(str(field_list)), origin='imaging_continuum_selfcal_incremental')
 
 def makefits(myimagebase):
     impbcor(imagename=myimagebase+'.image.tt0', pbimage=myimagebase+'.pb.tt0', outfile=myimagebase+'.image.tt0.pbcor', overwrite=True) # perform PBcorr
@@ -48,10 +51,15 @@ base_cont_vis = 'continuum_concatenated_incremental.ms'
 for field, field_nospace in (('W51e2w', 'W51e2w'),
                              ('W51 North', 'W51North')):
     if field not in field_list:
+        casalog.post("Skipping {0}".format(field), origin='imaging_continuum_selfcal_incremental')
         continue
+
+
     for cvis in vis:
-        if not os.path.exists(field_nospace+"_cont_"+cvis):
-            split(vis=cvis, outputvis=field_nospace+"_cont_"+cvis, spw=contspw,
+        new_ms = field_nospace+"_cont_"+cvis
+        if not os.path.exists(new_ms):
+            casalog.post("Splitting file {0}".format(new_ms), origin='imaging_continuum_selfcal_incremental')
+            split(vis=cvis, outputvis=new_ms, spw=contspw,
                   width=16, field=field)
 
     cont_vises = [field_nospace+"_cont_"+vv for vv in vis]
@@ -80,6 +88,7 @@ nspws = msmd.nspw()
 msmd.close()
 
 for field in field_list:
+    casalog.post("Beginning main loop for field: {0}".format(field), origin='imaging_continuum_selfcal_incremental')
     field_nospace = field.replace(" ","_")
 
     selfcal_vis = field_nospace + "_" + base_cont_vis
