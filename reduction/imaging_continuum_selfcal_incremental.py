@@ -73,8 +73,8 @@ caltables = []
 calinfo = {}
 
 # don't clean too shallowly first time: it takes forever to fix.
-thresholds = {'W51e2w': (2.5,2.5,1.5,1.0,1.0,1.0,0.5,0.25,0.25,0.25,0.25,0.25,0.25),
-              'W51 North': (2.5,1.5,1.0,1.0,1.0,1.0,0.5,0.5,0.5,0.5,0.5,0.5,0.5),
+thresholds = {'W51e2w': (2.5,2.5,1.5,1.0,1.0,1.0,0.5,0.25,0.25,0.25,0.25,0.25,0.25,0.25,0.25,0.25,0.25,0.25,0.25,0.25,),
+              'W51 North': (2.5,1.5,1.0,1.0,1.0,1.0,0.5,0.5,0.5,0.5,0.5,0.5,0.5,0.5,0.5,0.25,0.25,0.25,0.25,0.25,0.25),
              }
 imsize = {'W51e2w': 256,
           'W51 North': 1024}
@@ -92,7 +92,7 @@ for field in field_list:
 
     selfcal_vis = field_nospace + "_" + base_cont_vis
 
-    clearcal(vis=selfcal_vis, field=field_nospace)
+    clearcal(vis=selfcal_vis, field=field)
 
     # create a dirty image for masking
     imagename = '{0}_QbandAarray_cont_spws_continuum_cal_dirty_2terms_robust0'.format(field_nospace)
@@ -180,8 +180,14 @@ for field in field_list:
                                                                           (5, 2, '{0} mJy','phase','p', '30s', '',),
                                                                           (6, 2, '{0} mJy','phase','p', '30s', '',),
                                                                           (7, 2, '{0} mJy','phase','p', '30s', '',),
-                                                                          (8, 3, '{0} mJy','phase','p', '30s', '',),
-                                                                          (9, 3, '{0} mJy','phase','p', '30s', '',),
+                                                                          (8, 2, '{0} mJy','phase','p', '30s', '',),
+                                                                          (9, 2, '{0} mJy','phase','p', '30s', '',),
+                                                                          (10, 2, '{0} mJy','phase','p', '30s', '',),
+                                                                          (11, 2, '{0} mJy','phase','p', '30s', '',),
+                                                                          (12, 2, '{0} mJy','phase','p', '20s', '',),
+                                                                          (13, 2, '{0} mJy','phase','p', '20s', '',),
+                                                                          (14, 2, '{0} mJy','phase','p', '10s', '',),
+                                                                          (15, 2, '{0} mJy','phase','p', '10s', '',),
                                                                           #(7, 2, '{0} mJy','ampphase', 'ap', 'inf', '',),
                                                                           #(8, 2, '{0} mJy','ampphase', 'ap', 'inf', '',),
                                                                           #(9, 3, '{0} mJy','ampphase', 'ap', 'inf', '',),
