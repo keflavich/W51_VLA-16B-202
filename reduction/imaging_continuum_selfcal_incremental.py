@@ -2,7 +2,7 @@ import numpy as np
 from astropy.io import fits
 import pyregion
 import os
-from taskinit import msmdtool, iatool
+from taskinit import msmdtool, iatool, casalog
 from split import split
 from concat import concat
 from bandpass import bandpass
@@ -12,7 +12,6 @@ from applycal import applycal
 from tclean import tclean
 from exportfits import exportfits
 from importfits import importfits
-from casalog import casalog
 from impbcor import impbcor
 ia = iatool()
 msmd = msmdtool()
@@ -89,7 +88,7 @@ msmd.close()
 
 for field in field_list:
     casalog.post("Beginning main loop for field: {0}".format(field), origin='imaging_continuum_selfcal_incremental')
-    field_nospace = field.replace(" ","_")
+    field_nospace = field.replace(" ","")
 
     selfcal_vis = field_nospace + "_" + base_cont_vis
 
