@@ -326,30 +326,31 @@ for field in field_list:
 
 
 
-#for field in field_list:
-#    field_nospace = field.replace(" ","_")
-#    output = myimagebase = imagename = '{0}_QbandAarray_cont_spws_continuum_cal_clean_2terms_robust0_wproj_selfcal{1}'.format(field_nospace, iternum+1)
-#
-#    for suffix in ('pb', 'weight', 'sumwt', 'psf', 'model', 'mask',
-#                   'image', 'residual'):
-#        os.system('rm -rf {0}.{1}'.format(output, suffix))
-#
-#    tclean(vis=selfcal_vis,
-#           imagename=imagename,
-#           field=field,
-#           spw='',
-#           weighting='briggs',
-#           robust=0.0,
-#           imsize=imsize,
-#           cell=['0.01 arcsec'],
-#           threshold=threshold,
-#           niter=10000,
-#           gridder='wproject',
-#           wprojplanes=32,
-#           specmode='mfs',
-#           deconvolver='mtmfs',
-#           outframe='LSRK',
-#           savemodel='modelcolumn',
-#           nterms=2,
-#           selectdata=True)
-#    makefits(myimagebase)
+for field in field_list:
+    field_nospace = field.replace(" ","")
+    output = myimagebase = imagename = '{0}_QbandAarray_cont_spws_continuum_cal_clean_2terms_robust0_wproj_selfcal{1}_final'.format(field_nospace, iternum+1)
+
+    for suffix in ('pb', 'weight', 'sumwt', 'psf', 'model', 'mask',
+                   'image', 'residual'):
+        os.system('rm -rf {0}.{1}'.format(output, suffix))
+
+    tclean(vis=selfcal_vis,
+           imagename=imagename,
+           field=field,
+           spw='',
+           weighting='briggs',
+           robust=0.0,
+           imsize=8000,
+           cell=['0.01 arcsec'],
+           threshold='0.1mJy',
+           niter=100000,
+           #gridder='wproject',
+           #wprojplanes=32,
+           specmode='mfs',
+           deconvolver='mtmfs',
+           outframe='LSRK',
+           savemodel='modelcolumn',
+           nterms=2,
+           scales=[0,3,9],
+           selectdata=True)
+    makefits(myimagebase)
