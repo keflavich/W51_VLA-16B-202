@@ -18,4 +18,8 @@ flagdata(vis=vis, antenna='ea17', spw='50~64', correlation='RR', mode='manual',
          action='apply')
 
 # appears to have bad amplitudes when doing selfcal
-flagdata(vis=vis, antenna='ea01', spw='18~33', mode='manual', action='apply')
+# A2C2/B2D2
+flagdata(vis=vis, antenna='ea01', spw='18~33,50~64', mode='manual', action='apply')
+
+# B2D2 is hosed
+flagdata(vis=vis, antenna='ea21&ea26', spw='50~64', mode='manual', action='apply')

@@ -13,6 +13,8 @@ from tclean import tclean
 from exportfits import exportfits
 from importfits import importfits
 from impbcor import impbcor
+import casac
+tb = casac.casac().table()
 ia = iatool()
 msmd = msmdtool()
 
@@ -44,6 +46,15 @@ vis = [#'16B-202.sb32532587.eb32875589.57663.07622001157.ms',
        '16B-202.sb32957824.eb33234671.57760.62953023148.ms',
       ]
 contspw = '2,4,5,6,7,8,9,10,12,13,14,15,16,17,18,19,22,23,24,25,26,28,29,30,31,32,34,35,36,37,39,42,44,45,47,48,49,50,51,52,53,54,55,56,57,58,59,60,62,63,64'
+# really want 8-80, 100-120, but need jumps of 16...
+#contspw = ",".join(["{0}:8~72;104~120".format(xx)
+#                    if xx == "50" else
+#                    "{0}:8~120".format(xx)
+#                    for xx in contspw.split(",")])
+flagchans = ",".join(["{0}:0~5;123~128".format(xx) for xx in
+                      contspw.split(',')])
+
+
 
 base_cont_vis = 'continuum_concatenated_incremental.ms'
 
@@ -58,8 +69,17 @@ for field, field_nospace in (('W51e2w', 'W51e2w'),
         new_ms = field_nospace+"_cont_"+cvis
         if not os.path.exists(new_ms):
             casalog.post("Splitting file {0}".format(new_ms), origin='imaging_continuum_selfcal_incremental')
+
+            flagdata(vis=cvis, mode='manual', spw=flagchans)
+            flagdata(vis=cvis, mode='manual', spw='50:80~100')
+
+            # actual bad data; redundant with flagging_sbXX.py
+            #flagdata(vis=cvis, mode='manual', antenna='ea01', spw='50~64,18~33')
+
             split(vis=cvis, outputvis=new_ms, spw=contspw,
                   width=16, field=field)
+
+            flagdata(vis=cvis, mode='unflag', spw='50:80~100')
 
     cont_vises = [field_nospace+"_cont_"+vv for vv in vis]
     cont_vis = field_nospace+'_'+base_cont_vis
@@ -69,12 +89,22 @@ for field, field_nospace in (('W51e2w', 'W51e2w'),
 
 selfcal_vis = cont_vis
 
+
+# flag out two basebands for antenna ea01
+tb.open(selfcal_vis+"/SPECTRAL_WINDOW")
+spwnames = tb.getcol('NAME')
+tb.close()
+flag_windows = ",".join([str(ii) for ii,xx in enumerate(spwnames) if 'B2D2' in xx or 'A2C2' in xx])
+casalog.post("Flagging windows {0} for antenna ea01".format(flag_windows), origin='imaging_continuum_selfcal_incremental')
+flagdata(vis=selfcal_vis, antenna='ea01', spw=flag_windows, mode='manual')
+
+
 caltables = []
 calinfo = {}
 
 # don't clean too shallowly first time: it takes forever to fix.
-thresholds = {'W51e2w': (2.5,2.5,1.5,1.0,1.0,1.0,0.5,0.25,0.25,0.25,0.25,0.25,0.25,0.25,0.25,0.25,0.25,0.25,0.25,0.25,),
-              'W51 North': (2.5,1.5,1.0,1.0,1.0,1.0,0.5,0.5,0.5,0.5,0.5,0.5,0.5,0.5,0.5,0.25,0.25,0.25,0.25,0.25,0.25),
+thresholds = {'W51e2w': (2.5,2.5,1.5,1.0,1.0,1.0,0.5,0.25,0.25,0.25,0.25,0.25,0.25,0.25,0.25,0.25,0.25,0.25,0.25,0.25,0.25),
+              'W51 North': (2.5,1.5,1.0,1.0,1.0,1.0,0.5,0.5,0.5,0.5,0.5,0.5,0.5,0.5,0.5,0.25,0.25,0.25,0.25,0.25,0.25,0.25),
              }
 imsize = {'W51e2w': 256,
           'W51 North': 1024}
@@ -188,6 +218,11 @@ for field in field_list:
                                                                           (13, 2, '{0} mJy','phase','p', '20s', '',),
                                                                           (14, 2, '{0} mJy','phase','p', '10s', '',),
                                                                           (15, 2, '{0} mJy','phase','p', '10s', '',),
+                                                                          (16, 2, '{0} mJy','amp','a', 'inf', 'scan',),
+                                                                          (17, 2, '{0} mJy','amp','a', 'inf', 'scan',),
+                                                                          (18, 2, '{0} mJy','bandpass','', 'inf', 'scan',),
+                                                                          (19, 2, '{0} mJy','bandpass','', 'inf', 'scan',),
+                                                                          #(20, 2, '{0} mJy','bandpass','', 'inf', 'scan',),
                                                                           #(7, 2, '{0} mJy','ampphase', 'ap', 'inf', '',),
                                                                           #(8, 2, '{0} mJy','ampphase', 'ap', 'inf', '',),
                                                                           #(9, 3, '{0} mJy','ampphase', 'ap', 'inf', '',),
@@ -281,14 +316,19 @@ for field in field_list:
                     spwmap=[[0]*nspws if calinfo[ii]['combine']=='spw' else [] for ii in range(len(caltables))],
                     interp='linear,linear',
                     solnorm=True)
+            if 'amp' in caltype:
+                # avoid extreme outliers: assume anything going more than 2x in either direction is wrong
+                flagdata(caltable, mode='clip', clipminmax=[0.5, 2.0], datacolumn='CPARAM')
         elif 'bandpass' in caltype:
             bandpass(vis=selfcal_vis, caltable=caltable,
-                     solint='{0},16ch'.format(solint), combine='obs',
+                     solint='{0},16ch'.format(solint), combine=combine,
                      field=field, refant='ea07',
                      gaintable=caltables,
                      spwmap=[[0]*nspws if calinfo[ii]['combine']=='spw' else [] for ii in range(len(caltables))],
                      interp='linear,linear',
                      solnorm=True)
+            # avoid extreme outliers: assume anything going more than 2x in either direction is wrong
+            flagdata(caltable, mode='clip', clipminmax=[0.5, 2.0], datacolumn='CPARAM')
 
         if not os.path.exists(caltable):
             casalog.post("Calibration table {0} does not exist".format(caltable), "ERROR", "IncrementalSelfcalScript")
@@ -328,7 +368,7 @@ for field in field_list:
 
 for field in field_list:
     field_nospace = field.replace(" ","")
-    output = myimagebase = imagename = '{0}_QbandAarray_cont_spws_continuum_cal_clean_2terms_robust0_wproj_selfcal{1}_final'.format(field_nospace, iternum+1)
+    output = myimagebase = imagename = '{0}_QbandAarray_cont_spws_continuum_cal_clean_2terms_robust0_selfcal{1}_final'.format(field_nospace, iternum+1)
 
     for suffix in ('pb', 'weight', 'sumwt', 'psf', 'model', 'mask',
                    'image', 'residual'):
@@ -342,7 +382,7 @@ for field in field_list:
            robust=0.0,
            imsize=8000,
            cell=['0.01 arcsec'],
-           threshold='0.1mJy',
+           threshold='0.2mJy',
            niter=100000,
            #gridder='wproject',
            #wprojplanes=32,
@@ -352,5 +392,7 @@ for field in field_list:
            savemodel='modelcolumn',
            nterms=2,
            scales=[0,3,9],
+           mask=mask,
            selectdata=True)
     makefits(myimagebase)
+

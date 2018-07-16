@@ -5,7 +5,7 @@
 #
 # These are required
 #
-MEMORY="30gb"
+PMEM="30gb"
 WORK_DIR='/lustre/aginsbur/16B-202_W51QKa/merge'
 COMMAND=$WORK_DIR/'run_casa_incrementalselfcal.sh'
 
@@ -13,7 +13,7 @@ COMMAND=$WORK_DIR/'run_casa_incrementalselfcal.sh'
 # These are optional
 #
 NUM_NODES="1"      # default is 1
-NUM_CORES="1"      # default is 1
+NUM_CORES="8"      # default is 1
 #MAILTO="nm-4386"   # default is the user submitting the job
 #QUEUE="batch"      # default is the batch queue
 DATE=`date +%Y%M%D_%H%M%S`
