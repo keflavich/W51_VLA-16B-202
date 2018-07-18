@@ -22,3 +22,7 @@ flagdata(vis=vis, antenna='ea26', spw='50~64', mode='manual', action='apply')
 
 # there might be something funny going on as a function of frequency between ea06 and ea07, ea07 and ea10, ea07 and... everyone
 # ea10&ea25, ea24 and ea25
+
+
+# spw50 is bad for the calibrators for ea22
+flagdata(vis=vis, antenna='ea22', spw='50', mode='manual', action='apply')

@@ -90,21 +90,22 @@ for field, field_nospace in (('W51e2w', 'W51e2w'),
 selfcal_vis = cont_vis
 
 
-# flag out two basebands for antenna ea01
-tb.open(selfcal_vis+"/SPECTRAL_WINDOW")
-spwnames = tb.getcol('NAME')
-tb.close()
-flag_windows = ",".join([str(ii) for ii,xx in enumerate(spwnames) if 'B2D2' in xx or 'A2C2' in xx])
-casalog.post("Flagging windows {0} for antenna ea01".format(flag_windows), origin='imaging_continuum_selfcal_incremental')
-flagdata(vis=selfcal_vis, antenna='ea01', spw=flag_windows, mode='manual')
+#(this should already be done, but you might want to double-check...)
+# # flag out two basebands for antenna ea01
+# tb.open(selfcal_vis+"/SPECTRAL_WINDOW")
+# spwnames = tb.getcol('NAME')
+# tb.close()
+# flag_windows = ",".join([str(ii) for ii,xx in enumerate(spwnames) if 'B2D2' in xx or 'A2C2' in xx])
+# casalog.post("Flagging windows {0} for antenna ea01".format(flag_windows), origin='imaging_continuum_selfcal_incremental')
+# flagdata(vis=selfcal_vis, antenna='ea01', spw=flag_windows, mode='manual')
 
 
 caltables = []
 calinfo = {}
 
 # don't clean too shallowly first time: it takes forever to fix.
-thresholds = {'W51e2w': (2.5,2.5,1.5,1.0,1.0,1.0,0.5,0.25,0.25,0.25,0.25,0.25,0.25,0.25,0.25,0.25,0.25,0.25,0.25,0.25,0.25),
-              'W51 North': (2.5,1.5,1.0,1.0,1.0,1.0,0.5,0.5,0.5,0.5,0.5,0.5,0.5,0.5,0.5,0.25,0.25,0.25,0.25,0.25,0.25,0.25),
+thresholds = {'W51e2w': (2.5,2.5,1.5,1.0,1.0,1.0,0.5,0.25,0.25,0.25,0.25,0.25,0.25,0.25,0.25,0.25,0.25,0.25,0.25,0.25,0.25,0.25,0.25),
+              'W51 North': (2.5,1.5,1.0,1.0,1.0,1.0,0.5,0.5,0.5,0.5,0.5,0.5,0.5,0.5,0.5,0.25,0.25,0.25,0.25,0.25,0.25,0.25,0.25,0.25),
              }
 imsize = {'W51e2w': 256,
           'W51 North': 1024}
@@ -218,10 +219,16 @@ for field in field_list:
                                                                           (13, 2, '{0} mJy','phase','p', '20s', '',),
                                                                           (14, 2, '{0} mJy','phase','p', '10s', '',),
                                                                           (15, 2, '{0} mJy','phase','p', '10s', '',),
-                                                                          (16, 2, '{0} mJy','amp','a', 'inf', 'scan',),
-                                                                          (17, 2, '{0} mJy','amp','a', 'inf', 'scan',),
-                                                                          (18, 2, '{0} mJy','bandpass','', 'inf', 'scan',),
-                                                                          (19, 2, '{0} mJy','bandpass','', 'inf', 'scan',),
+                                                                          #(16, 2, '{0} mJy','amp','a', 'inf', 'scan',),
+                                                                          #(17, 2, '{0} mJy','amp','a', 'inf', 'scan',),
+                                                                          (16, 2, '{0} mJy','bandpass','', 'inf', 'scan,obs',),
+                                                                          (17, 2, '{0} mJy','bandpass','', 'inf', 'scan,obs',),
+                                                                          (18, 2, '{0} mJy','bandpass','', 'inf', 'scan,obs',),
+                                                                          (19, 2, '{0} mJy','bandpass','', 'inf', 'scan,obs',),
+                                                                          (20, 2, '{0} mJy','bandpass','', 'inf', 'scan,obs',),
+                                                                          (21, 2, '{0} mJy','bandpass','', 'inf', 'scan,obs',),
+                                                                          (22, 2, '{0} mJy','phase','p', '30s', '',),
+                                                                          (23, 2, '{0} mJy','phase','p', '30s', '',),
                                                                           #(20, 2, '{0} mJy','bandpass','', 'inf', 'scan',),
                                                                           #(7, 2, '{0} mJy','ampphase', 'ap', 'inf', '',),
                                                                           #(8, 2, '{0} mJy','ampphase', 'ap', 'inf', '',),
@@ -248,6 +255,8 @@ for field in field_list:
             #selfcal_vis = outputvis
             caltable = '{2}_{1}_{0}.cal'.format(field_nospace, iternum, caltype)
             if not os.path.exists(caltable):
+                casalog.post("Calibration table {1} does not exist but image does.  Remove images with "
+                                 "suffix {0}".format(imagename, caltable), "SEVERE", "IncrementalSelfcalScript")
                 raise ValueError("Calibration table {1} does not exist but image does.  Remove images with "
                                  "suffix {0}".format(imagename, caltable))
             caltables.append(caltable)
@@ -313,6 +322,7 @@ for field in field_list:
                     combine=combine,
                     gaintype='G', field=field, calmode=calmode,
                     gaintable=caltables,
+                    minsnr=1.5,
                     spwmap=[[0]*nspws if calinfo[ii]['combine']=='spw' else [] for ii in range(len(caltables))],
                     interp='linear,linear',
                     solnorm=True)
@@ -322,8 +332,10 @@ for field in field_list:
         elif 'bandpass' in caltype:
             bandpass(vis=selfcal_vis, caltable=caltable,
                      solint='{0},16ch'.format(solint), combine=combine,
-                     field=field, refant='ea07',
+                     field=field,
+                     #refant='ea07',
                      gaintable=caltables,
+                     minsnr=1.5,
                      spwmap=[[0]*nspws if calinfo[ii]['combine']=='spw' else [] for ii in range(len(caltables))],
                      interp='linear,linear',
                      solnorm=True)
@@ -396,3 +408,40 @@ for field in field_list:
            selectdata=True)
     makefits(myimagebase)
 
+
+
+
+# make some smaller diagnostic images
+for field in field_list:
+    field_nospace = field.replace(" ","")
+    selfcal_vis = field_nospace + "_" + base_cont_vis
+    msmd.open(selfcal_vis)
+    summary = msmd.summary()
+    msmd.close()
+
+    for baseband in ('A1C1', 'A2C2', 'B1D1', 'B2D2'):
+        spws = ",".join([x for x in np.unique(summary['spectral windows']['names'])
+                         if baseband in x])
+
+        output = myimagebase = imagename = '{0}_QbandAarray_spw{2}_continuum_cal_clean_2terms_robust0_selfcal{1}_final'.format(field_nospace, iternum+1, baseband)
+        tclean(vis=cont_vis,
+               imagename=imagename,
+               field=field,
+               spw=spws,
+               imsize=[1000,1000],
+               cell='0.01arcsec',
+               niter=1000,
+               threshold='1mJy',
+               robust=0.5,
+               gridder='standard',
+               deconvolver='multiscale',
+               specmode='mfs',
+               nterms=1,
+               weighting='briggs',
+               pblimit=0.2,
+               interactive=False,
+               outframe='LSRK',
+               savemodel='none',
+               scales=[0,3,9],
+              )
+        makefits(imagename, cleanup=False)

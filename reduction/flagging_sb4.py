@@ -17,3 +17,6 @@ flagdata(vis=vis, antenna='ea26', spw='50~64', mode='manual', action='apply')
 
 # appears to have bad amplitudes when doing selfcal
 flagdata(vis=vis, antenna='ea01', spw='18~33', mode='manual', action='apply')
+
+# spw50 is bad for the calibrators for ea24 & ea12
+flagdata(vis=vis, antenna='ea12,ea24', spw='50', mode='manual', action='apply')

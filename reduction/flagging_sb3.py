@@ -23,3 +23,7 @@ flagdata(vis=vis, antenna='ea01', spw='18~33,50~64', mode='manual', action='appl
 
 # B2D2 is hosed
 flagdata(vis=vis, antenna='ea21&ea26', spw='50~64', mode='manual', action='apply')
+
+
+# looks bad on the phasecal
+flagdata(vis=vis, antenna='ea06', spw='13', correlation='LL', mode='manual', action='apply')
