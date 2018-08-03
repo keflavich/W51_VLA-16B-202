@@ -23,19 +23,45 @@ if 'field_list' not in locals():
     raise ValueError("Set field_list")
 if isinstance(field_list, str):
     raise TypeError("Make field list a list or tuple")
+if 're_clear' not in locals():
+    re_clear = True
 
 casalog.post("Field list is: {0}".format(str(field_list)), origin='imaging_continuum_selfcal_incremental')
 
-def makefits(myimagebase):
-    impbcor(imagename=myimagebase+'.image.tt0', pbimage=myimagebase+'.pb.tt0', outfile=myimagebase+'.image.tt0.pbcor', overwrite=True) # perform PBcorr
-    exportfits(imagename=myimagebase+'.image.tt0.pbcor', fitsimage=myimagebase+'.image.tt0.pbcor.fits', dropdeg=True, overwrite=True) # export the corrected image
-    exportfits(imagename=myimagebase+'.image.tt1', fitsimage=myimagebase+'.image.tt1.fits', dropdeg=True, overwrite=True) # export the corrected image
-    exportfits(imagename=myimagebase+'.pb.tt0', fitsimage=myimagebase+'.pb.tt0.fits', dropdeg=True, overwrite=True) # export the PB image
-    exportfits(imagename=myimagebase+'.model.tt0', fitsimage=myimagebase+'.model.tt0.fits', dropdeg=True, overwrite=True) # export the PB image
-    exportfits(imagename=myimagebase+'.model.tt1', fitsimage=myimagebase+'.model.tt1.fits', dropdeg=True, overwrite=True) # export the PB image
-    exportfits(imagename=myimagebase+'.residual.tt0', fitsimage=myimagebase+'.residual.tt0.fits', dropdeg=True, overwrite=True) # export the PB image
-    exportfits(imagename=myimagebase+'.alpha', fitsimage=myimagebase+'.alpha.fits', dropdeg=True, overwrite=True)
-    exportfits(imagename=myimagebase+'.alpha.error', fitsimage=myimagebase+'.alpha.error.fits', dropdeg=True, overwrite=True)
+def makefits(myimagebase, cleanup=True):
+    if os.path.exists(myimagebase+'.image.tt0'):
+        impbcor(imagename=myimagebase+'.image.tt0', pbimage=myimagebase+'.pb.tt0', outfile=myimagebase+'.image.tt0.pbcor', overwrite=True) # perform PBcorr
+        exportfits(imagename=myimagebase+'.image.tt0.pbcor', fitsimage=myimagebase+'.image.tt0.pbcor.fits', overwrite=True) # export the corrected image
+        exportfits(imagename=myimagebase+'.image.tt1', fitsimage=myimagebase+'.image.tt1.fits', overwrite=True) # export the corrected image
+        exportfits(imagename=myimagebase+'.pb.tt0', fitsimage=myimagebase+'.pb.tt0.fits', overwrite=True) # export the PB image
+        exportfits(imagename=myimagebase+'.model.tt0', fitsimage=myimagebase+'.model.tt0.fits', overwrite=True) # export the PB image
+        exportfits(imagename=myimagebase+'.model.tt1', fitsimage=myimagebase+'.model.tt1.fits', overwrite=True) # export the PB image
+        exportfits(imagename=myimagebase+'.residual.tt0', fitsimage=myimagebase+'.residual.tt0.fits', overwrite=True) # export the PB image
+        exportfits(imagename=myimagebase+'.alpha', fitsimage=myimagebase+'.alpha.fits', overwrite=True)
+        exportfits(imagename=myimagebase+'.alpha.error', fitsimage=myimagebase+'.alpha.error.fits', overwrite=True)
+
+        if cleanup:
+            for ttsuffix in ('.tt0', '.tt1', '.tt2'):
+                for suffix in ('pb{tt}', 'weight', 'sumwt{tt}', 'psf{tt}',
+                               'model{tt}', 'mask', 'image{tt}', 'residual{tt}',
+                               'alpha', 'alpha.error'):
+                    os.system('rm -rf {0}.{1}'.format(myimagebase, suffix).format(tt=ttsuffix))
+    elif os.path.exists(myimagebase+'.image'):
+        impbcor(imagename=myimagebase+'.image', pbimage=myimagebase+'.pb', outfile=myimagebase+'.image.pbcor', overwrite=True) # perform PBcorr
+        exportfits(imagename=myimagebase+'.image.pbcor', fitsimage=myimagebase+'.image.pbcor.fits', overwrite=True) # export the corrected image
+        exportfits(imagename=myimagebase+'.pb', fitsimage=myimagebase+'.pb.fits', overwrite=True) # export the PB image
+        exportfits(imagename=myimagebase+'.model', fitsimage=myimagebase+'.model.fits', overwrite=True) # export the PB image
+        exportfits(imagename=myimagebase+'.residual', fitsimage=myimagebase+'.residual.fits', overwrite=True) # export the PB image
+
+        if cleanup:
+            ttsuffix=''
+            for suffix in ('pb{tt}', 'weight', 'sumwt{tt}', 'psf{tt}',
+                           'model{tt}', 'mask', 'image{tt}', 'residual{tt}',
+                           'alpha', 'alpha.error'):
+                os.system('rm -rf {0}.{1}'.format(myimagebase, suffix).format(tt=ttsuffix))
+    else:
+        raise IOError("No image file found matching {0}".format(myimagebase))
+
 
 
 # SB1 may have terrible calibration (is 2x as faint, and wasn't appropriately
@@ -104,8 +130,8 @@ caltables = []
 calinfo = {}
 
 # don't clean too shallowly first time: it takes forever to fix.
-thresholds = {'W51e2w': (2.5,2.5,1.5,1.0,1.0,1.0,0.5,0.25,0.25,0.25,0.25,0.25,0.25,0.25,0.25,0.25,0.25,0.25,0.25,0.25,0.25,0.25,0.25),
-              'W51 North': (2.5,1.5,1.0,1.0,1.0,1.0,0.5,0.5,0.5,0.5,0.5,0.5,0.5,0.5,0.5,0.25,0.25,0.25,0.25,0.25,0.25,0.25,0.25,0.25),
+thresholds = {'W51e2w': (2.5,2.5,1.5,1.0,1.0,1.0,0.5,0.25,0.25,0.25,0.25,0.25,0.25,0.25,0.25,0.25,0.25,0.25,0.25,0.25,0.25,0.25,0.25,0.25,0.25,0.25,0.25),
+              'W51 North': (2.5,1.5,1.0,1.0,1.0,1.0,0.5,0.5,0.5,0.5,0.5,0.5,0.5,0.5,0.5,0.25,0.25,0.25,0.25,0.25,0.25,0.25,0.25,0.25,0.25,0.25,0.25,0.25),
              }
 imsize = {'W51e2w': 256,
           'W51 North': 1024}
@@ -123,9 +149,11 @@ for field in field_list:
 
     selfcal_vis = field_nospace + "_" + base_cont_vis
 
-    clearcal(vis=selfcal_vis, field=field)
+    if re_clear:
+        clearcal(vis=selfcal_vis, field=field)
 
     # create a dirty image for masking
+    cleanbox_mask_image = 'cleanbox_mask_{0}.image'.format(field_nospace)
     imagename = '{0}_QbandAarray_cont_spws_continuum_cal_dirty_2terms_robust0'.format(field_nospace)
     if not os.path.exists('{0}.image.tt0.pbcor.fits'.format(imagename)):
         tclean(vis=selfcal_vis,
@@ -152,46 +180,45 @@ for field in field_list:
               )
         makefits(imagename)
 
-    dirtyimage = imagename+'.image.tt0'
-    ia.open(dirtyimage)
-    ia.calcmask(mask=dirtyimage+" > 0.0025",
-                name='dirty_mask_{0}'.format(field_nospace))
+        dirtyimage = imagename+'.image.tt0'
+        ia.open(dirtyimage)
+        ia.calcmask(mask=dirtyimage+" > 0.0025",
+                    name='dirty_mask_{0}'.format(field_nospace))
 
-    ia.close()
-    makemask(mode='copy', inpimage=dirtyimage,
-             inpmask=dirtyimage+":dirty_mask_{0}".format(field_nospace),
-             output='dirty_mask_{0}.mask'.format(field_nospace),
-             overwrite=True)
-    mask = 'dirty_mask_{0}.mask'.format(field_nospace)
-    exportfits(mask, mask+'.fits', dropdeg=True, overwrite=True)
+        ia.close()
+        makemask(mode='copy', inpimage=dirtyimage,
+                 inpmask=dirtyimage+":dirty_mask_{0}".format(field_nospace),
+                 output='dirty_mask_{0}.mask'.format(field_nospace),
+                 overwrite=True)
+        mask = 'dirty_mask_{0}.mask'.format(field_nospace)
+        exportfits(mask, mask+'.fits', dropdeg=True, overwrite=True)
 
-    exportfits(dirtyimage, dirtyimage+".fits", overwrite=True)
-    reg = pyregion.open('cleanbox_regions_{0}.reg'.format(field_nospace))
-    imghdu = fits.open(dirtyimage+".pbcor.fits")[0]
-    imghdu2 = fits.open(dirtyimage+".fits")[0]
-    mask = reg.get_mask(imghdu)[None, None, :, :]
-    imghdu2.data = mask.astype('int16')
-    imghdu2.header['BITPIX'] = 16
-    imghdu2.writeto('cleanbox_mask_{0}.fits'.format(field_nospace), clobber=True)
-    cleanbox_mask_image = 'cleanbox_mask_{0}.image'.format(field_nospace)
-    importfits(fitsimage='cleanbox_mask_{0}.fits'.format(field_nospace),
-               imagename=cleanbox_mask_image,
-               overwrite=True)
-    #ia.open(cleanbox_mask_image)
-    #im = ia.adddegaxes(spectral=True, stokes='I', overwrite=True)
-    #ia.close()
-    #os.system('rm -rf {0}'.format(cleanbox_mask_image))
-    #os.system('mv tmp_{0} {0}'.format(cleanbox_mask_image))
-    ia.open(cleanbox_mask_image)
-    ia.calcmask(mask=cleanbox_mask_image+" > 0.5",
-                name='cleanbox_mask_{0}'.format(field_nospace))
+        exportfits(dirtyimage, dirtyimage+".fits", overwrite=True)
+        reg = pyregion.open('cleanbox_regions_{0}.reg'.format(field_nospace))
+        imghdu = fits.open(dirtyimage+".pbcor.fits")[0]
+        imghdu2 = fits.open(dirtyimage+".fits")[0]
+        mask = reg.get_mask(imghdu)[None, None, :, :]
+        imghdu2.data = mask.astype('int16')
+        imghdu2.header['BITPIX'] = 16
+        imghdu2.writeto('cleanbox_mask_{0}.fits'.format(field_nospace), clobber=True)
+        importfits(fitsimage='cleanbox_mask_{0}.fits'.format(field_nospace),
+                   imagename=cleanbox_mask_image,
+                   overwrite=True)
+        #ia.open(cleanbox_mask_image)
+        #im = ia.adddegaxes(spectral=True, stokes='I', overwrite=True)
+        #ia.close()
+        #os.system('rm -rf {0}'.format(cleanbox_mask_image))
+        #os.system('mv tmp_{0} {0}'.format(cleanbox_mask_image))
+        ia.open(cleanbox_mask_image)
+        ia.calcmask(mask=cleanbox_mask_image+" > 0.5",
+                    name='cleanbox_mask_{0}'.format(field_nospace))
 
-    ia.close()
-    cleanbox_mask = 'cleanbox_mask_{0}.mask'.format(field_nospace)
-    makemask(mode='copy', inpimage=cleanbox_mask_image,
-             inpmask=cleanbox_mask_image+":cleanbox_mask_{0}".format(field_nospace),
-             output=cleanbox_mask,
-             overwrite=True)
+        ia.close()
+        cleanbox_mask = 'cleanbox_mask_{0}.mask'.format(field_nospace)
+        makemask(mode='copy', inpimage=cleanbox_mask_image,
+                 inpmask=cleanbox_mask_image+":cleanbox_mask_{0}".format(field_nospace),
+                 output=cleanbox_mask,
+                 overwrite=True)
 
     mask = cleanbox_mask_image
 
@@ -221,14 +248,14 @@ for field in field_list:
                                                                           (15, 2, '{0} mJy','phase','p', '10s', '',),
                                                                           #(16, 2, '{0} mJy','amp','a', 'inf', 'scan',),
                                                                           #(17, 2, '{0} mJy','amp','a', 'inf', 'scan',),
-                                                                          (16, 2, '{0} mJy','bandpass','', 'inf', 'scan,obs',),
-                                                                          (17, 2, '{0} mJy','bandpass','', 'inf', 'scan,obs',),
-                                                                          (18, 2, '{0} mJy','bandpass','', 'inf', 'scan,obs',),
-                                                                          (19, 2, '{0} mJy','bandpass','', 'inf', 'scan,obs',),
-                                                                          (20, 2, '{0} mJy','bandpass','', 'inf', 'scan,obs',),
-                                                                          (21, 2, '{0} mJy','bandpass','', 'inf', 'scan,obs',),
-                                                                          (22, 2, '{0} mJy','phase','p', '30s', '',),
-                                                                          (23, 2, '{0} mJy','phase','p', '30s', '',),
+                                                                          # bandpass goes wanky (16, 2, '{0} mJy','bandpass','', 'inf', 'scan,obs',),
+                                                                          # bandpass goes wanky (17, 2, '{0} mJy','bandpass','', 'inf', 'scan,obs',),
+                                                                          # bandpass goes wanky (18, 2, '{0} mJy','bandpass','', 'inf', 'scan,obs',),
+                                                                          # bandpass goes wanky (19, 2, '{0} mJy','bandpass','', 'inf', 'scan,obs',),
+                                                                          # bandpass goes wanky (20, 2, '{0} mJy','bandpass','', 'inf', 'scan,obs',),
+                                                                          # bandpass goes wanky (21, 2, '{0} mJy','bandpass','', 'inf', 'scan,obs',),
+                                                                          # bandpass goes wanky (22, 2, '{0} mJy','phase','p', '30s', '',),
+                                                                          # bandpass goes wanky (23, 2, '{0} mJy','phase','p', '30s', '',),
                                                                           #(20, 2, '{0} mJy','bandpass','', 'inf', 'scan',),
                                                                           #(7, 2, '{0} mJy','ampphase', 'ap', 'inf', '',),
                                                                           #(8, 2, '{0} mJy','ampphase', 'ap', 'inf', '',),
@@ -255,8 +282,11 @@ for field in field_list:
             #selfcal_vis = outputvis
             caltable = '{2}_{1}_{0}.cal'.format(field_nospace, iternum, caltype)
             if not os.path.exists(caltable):
+                print('Does caltable {0} exist? {1}'.format(caltable, os.path.exists(caltable)))
+                print(os.listdir(caltable))
+                print(os.listdir(imagename+".image.tt0"))
                 casalog.post("Calibration table {1} does not exist but image does.  Remove images with "
-                                 "suffix {0}".format(imagename, caltable), "SEVERE", "IncrementalSelfcalScript")
+                             "suffix {0}".format(imagename, caltable), "SEVERE", "IncrementalSelfcalScript")
                 raise ValueError("Calibration table {1} does not exist but image does.  Remove images with "
                                  "suffix {0}".format(imagename, caltable))
             caltables.append(caltable)
@@ -378,9 +408,161 @@ for field in field_list:
 
 
 
+
+# make some smaller diagnostic images
 for field in field_list:
+    for robust in (-2, 0, 2):
+        field_nospace = field.replace(" ","")
+        selfcal_vis = field_nospace + "_" + base_cont_vis
+        msmd.open(selfcal_vis)
+        summary = msmd.summary()
+        msmd.close()
+
+        for baseband in ('A1C1', 'A2C2', 'B1D1', 'B2D2'):
+            spws = ",".join([x for x in np.unique(summary['spectral windows']['names'])
+                             if baseband in x])
+
+            output = myimagebase = imagename = '{0}_QbandAarray_spw{2}_continuum_cal_clean_2terms_robust{robust}_selfcal{1}_final'.format(field_nospace, iternum+1, baseband,
+                                                                                                                                          robust=robust)
+            if not os.path.exists(imagename+".image.pbcor.fits"):
+                casalog.post("Cleaning: {0}".format(output), origin='imaging_continuum_selfcal_incremental')
+
+                tclean(vis=cont_vis,
+                       imagename=imagename,
+                       field=field,
+                       spw=spws,
+                       imsize=[1000,1000],
+                       cell='0.01arcsec',
+                       niter=1000,
+                       threshold='1mJy',
+                       robust=robust,
+                       gridder='standard',
+                       deconvolver='multiscale',
+                       specmode='mfs',
+                       nterms=1,
+                       weighting='briggs',
+                       pblimit=0.2,
+                       interactive=False,
+                       outframe='LSRK',
+                       savemodel='none',
+                       scales=[0,3,9],
+                      )
+                casalog.post("FITSing: {0}".format(output), origin='imaging_continuum_selfcal_incremental')
+                makefits(imagename, cleanup=False)
+
+
+
+for field in field_list:
+    for robust in (-2, 0, 2):
+        field_nospace = field.replace(" ","")
+        selfcal_vis = field_nospace + "_" + base_cont_vis
+        msmd.open(selfcal_vis)
+        summary = msmd.summary()
+        msmd.close()
+
+        for spw in summary['spectral windows']['names']:
+
+            output = myimagebase = imagename = '{0}_QbandAarray_spw{2}_continuum_cal_clean_2terms_robust{robust}_selfcal{1}_final'.format(field_nospace, iternum+1, spw,
+                                                                                                                                          robust=robust)
+            if not os.path.exists(imagename+".image.pbcor.fits"):
+                casalog.post("Cleaning: {0}".format(output), origin='imaging_continuum_selfcal_incremental')
+
+                tclean(vis=selfcal_vis,
+                       imagename=imagename,
+                       field=field,
+                       spw=spw,
+                       imsize=[1000,1000],
+                       cell='0.01arcsec',
+                       niter=1000,
+                       threshold='1mJy',
+                       robust=robust,
+                       gridder='standard',
+                       deconvolver='multiscale',
+                       specmode='mfs',
+                       nterms=1,
+                       weighting='briggs',
+                       pblimit=0.2,
+                       interactive=False,
+                       outframe='LSRK',
+                       savemodel='none',
+                       scales=[0,3,9],
+                      )
+                casalog.post("FITSing: {0}".format(output), origin='imaging_continuum_selfcal_incremental')
+                makefits(imagename, cleanup=True)
+
+
+for field in field_list:
+    for robust in (-2, 0, 2):
+        field_nospace = field.replace(" ","")
+        output = myimagebase = imagename = '{0}_QbandAarray_cont_spws_continuum_cal_clean_2terms_robust{robust}_selfcal{1}_final'.format(field_nospace, iternum+1,
+                                                                                                                                         robust=robust)
+        casalog.post("Cleaning: {0}".format(output), origin='imaging_continuum_selfcal_incremental')
+
+        for suffix in ('pb', 'weight', 'sumwt', 'psf', 'model', 'mask',
+                       'image', 'residual'):
+            os.system('rm -rf {0}.{1}'.format(output, suffix))
+
+        tclean(vis=selfcal_vis,
+               imagename=imagename,
+               field=field,
+               spw='',
+               weighting='briggs',
+               robust=robust,
+               imsize=8000,
+               cell=['0.01 arcsec'],
+               threshold='0.2mJy',
+               niter=100000,
+               #gridder='wproject',
+               #wprojplanes=32,
+               specmode='mfs',
+               deconvolver='mtmfs',
+               outframe='LSRK',
+               savemodel='none',
+               nterms=2,
+               scales=[0,3,9],
+               mask=mask,
+               selectdata=True)
+        casalog.post("FITSing: {0}".format(output), origin='imaging_continuum_selfcal_incremental')
+        makefits(myimagebase)
+
+        output = myimagebase = imagename = '{0}_QbandAarray_cont_spws_continuum_cal_clean_2terms_noshortbaseline_robust{2}_selfcal{1}_final'.format(field_nospace, iternum+1, robust)
+        casalog.post("Cleaning: {0}".format(output), origin='imaging_continuum_selfcal_incremental')
+
+        for suffix in ('pb', 'weight', 'sumwt', 'psf', 'model', 'mask',
+                       'image', 'residual'):
+            os.system('rm -rf {0}.{1}'.format(output, suffix))
+
+        tclean(vis=selfcal_vis,
+               imagename=imagename,
+               field=field,
+               spw='',
+               weighting='briggs',
+               robust=robust,
+               uvrange='600~1000000klambda',
+               imsize=8000,
+               cell=['0.01 arcsec'],
+               threshold='0.2mJy',
+               niter=100000,
+               #gridder='wproject',
+               #wprojplanes=32,
+               specmode='mfs',
+               deconvolver='mtmfs',
+               outframe='LSRK',
+               savemodel='none',
+               nterms=2,
+               scales=[0,3,9],
+               mask=mask,
+               selectdata=True)
+        casalog.post("FITSing: {0}".format(output), origin='imaging_continuum_selfcal_incremental')
+        makefits(myimagebase)
+
+
+
+
+
     field_nospace = field.replace(" ","")
-    output = myimagebase = imagename = '{0}_QbandAarray_cont_spws_continuum_cal_clean_2terms_robust0_selfcal{1}_final'.format(field_nospace, iternum+1)
+    output = myimagebase = imagename = '{0}_QbandAarray_cont_spws_continuum_cal_clean_2terms_supernatural_selfcal{1}_final'.format(field_nospace, iternum+1,)
+    casalog.post("Cleaning: {0}".format(output), origin='imaging_continuum_selfcal_incremental')
 
     for suffix in ('pb', 'weight', 'sumwt', 'psf', 'model', 'mask',
                    'image', 'residual'):
@@ -391,9 +573,10 @@ for field in field_list:
            field=field,
            spw='',
            weighting='briggs',
-           robust=0.0,
-           imsize=8000,
-           cell=['0.01 arcsec'],
+           robust=2,
+           uvrange='0~1200klambda',
+           imsize=4000,
+           cell=['0.02 arcsec'],
            threshold='0.2mJy',
            niter=100000,
            #gridder='wproject',
@@ -401,47 +584,12 @@ for field in field_list:
            specmode='mfs',
            deconvolver='mtmfs',
            outframe='LSRK',
-           savemodel='modelcolumn',
+           savemodel='none',
            nterms=2,
            scales=[0,3,9],
            mask=mask,
            selectdata=True)
+    casalog.post("FITSing: {0}".format(output), origin='imaging_continuum_selfcal_incremental')
     makefits(myimagebase)
 
 
-
-
-# make some smaller diagnostic images
-for field in field_list:
-    field_nospace = field.replace(" ","")
-    selfcal_vis = field_nospace + "_" + base_cont_vis
-    msmd.open(selfcal_vis)
-    summary = msmd.summary()
-    msmd.close()
-
-    for baseband in ('A1C1', 'A2C2', 'B1D1', 'B2D2'):
-        spws = ",".join([x for x in np.unique(summary['spectral windows']['names'])
-                         if baseband in x])
-
-        output = myimagebase = imagename = '{0}_QbandAarray_spw{2}_continuum_cal_clean_2terms_robust0_selfcal{1}_final'.format(field_nospace, iternum+1, baseband)
-        tclean(vis=cont_vis,
-               imagename=imagename,
-               field=field,
-               spw=spws,
-               imsize=[1000,1000],
-               cell='0.01arcsec',
-               niter=1000,
-               threshold='1mJy',
-               robust=0.5,
-               gridder='standard',
-               deconvolver='multiscale',
-               specmode='mfs',
-               nterms=1,
-               weighting='briggs',
-               pblimit=0.2,
-               interactive=False,
-               outframe='LSRK',
-               savemodel='none',
-               scales=[0,3,9],
-              )
-        makefits(imagename, cleanup=False)

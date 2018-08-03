@@ -20,6 +20,8 @@ flagdata(vis=vis, antenna='ea17', spw='50~64', correlation='RR', mode='manual',
 # appears to have bad amplitudes when doing selfcal
 # A2C2/B2D2
 flagdata(vis=vis, antenna='ea01', spw='18~33,50~64', mode='manual', action='apply')
+flagdata(vis=vis, antenna='ea01')
+#flagdata(vis=vis, antenna='ea01&ea19,ea01&ea10',
 
 # B2D2 is hosed
 flagdata(vis=vis, antenna='ea21&ea26', spw='50~64', mode='manual', action='apply')
@@ -27,3 +29,5 @@ flagdata(vis=vis, antenna='ea21&ea26', spw='50~64', mode='manual', action='apply
 
 # looks bad on the phasecal
 flagdata(vis=vis, antenna='ea06', spw='13', correlation='LL', mode='manual', action='apply')
+
+
