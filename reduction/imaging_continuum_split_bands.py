@@ -17,17 +17,24 @@ def makefits(myimagebase):
     exportfits(imagename=myimagebase+'.alpha.error', fitsimage=myimagebase+'.alpha.error.fits', overwrite=True)
 
 
-selfcal_vis = cont_vis = 'continuum_concatenated_incremental.ms'
 
 iternum = "LAST"
 
-ms.open(selfcal_vis)
-mssum = ms.getspectralwindowinfo()
-ms.close()
 
 imsize = 7680
 
 for field in field_list:
+
+    casalog.post("Beginning freq split loop for field: {0}".format(field), origin='imaging_continuum_selfcal_incremental')
+
+    field_nospace = field.replace(" ","")
+
+    selfcal_vis = cont_vis = field_nospace + '_continuum_concatenated_incremental.ms'
+
+    ms.open(selfcal_vis)
+    mssum = ms.getspectralwindowinfo()
+    ms.close()
+
     #for frequency_range in ('40-45', '45-50'):
     #    minfreq, maxfreq = map(float, frequency_range.split("-"))
     for minfreq, maxfreq in [(42,43), (43,44), (44,45), (45,46), (46,47), (47,48), (48,49), (49,50)]:
