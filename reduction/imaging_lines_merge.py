@@ -19,6 +19,11 @@ vis = [#'16B-202.sb32532587.eb32875589.57663.07622001157.ms', # skip this one b/
 line_vis = vis
 
 for line, freq, spw in (
+                        ('CS_v=1_1-0',  48.635979, 23),
+                        ('CS_v=2_1-0',  48.280878, 19),
+                        # MISSED ('CS_v=3_1-0',  47.925643, ),
+                        ('CS_v=4_1-0',  47.570263, 15),
+                        ('CS_v=2_1-0_narrow',  48.280878, 20),
                         ('SiO_v=2', 42.82057, 40),
                         ('SiO_v=1', 43.12209, 43),
                         ('SiO_v=0', 43.42385, 46),
@@ -29,6 +34,7 @@ for line, freq, spw in (
                         ('NH3_19-19', 49.83768, 33),
                         ('H2CO_413-414', 48.28455, 20),
                         ('CS_1-0', 48.990957, 27), # missed the line by a lot.
+                        ('CS_1-0', 48.990957, 26), # super coarse version?
                         ('PN_1-0', 46.99026, 11),
                         # ('OCS_4-3', 48.6516043, 23), # not observed in line mode
                         #45.490316
@@ -43,6 +49,41 @@ for line, freq, spw in (
                        ):
 
     print("Starting {0}".format(line))
+
+    output = imagename = myimagebase = 'W51e2w_QbandAarray_{0}'.format(line)
+
+    if not os.path.exists(imagename+".image.pbcor.fits"):
+        os.system('rm -rf ' + output + '*/')
+
+        print(imagename)
+
+        tclean(vis=line_vis,
+               imagename=imagename,
+               field='W51e2w',
+               spw='{0}'.format(spw),
+               weighting='briggs',
+               robust=0.0,
+               imsize=[512,512],
+               cell=['0.01 arcsec'],
+               threshold='50 mJy',
+               niter=1000,
+               gridder='standard',
+               reffreq='{0}GHz'.format(freq),
+               specmode='cube',
+               outframe='LSRK',
+               savemodel='none',
+               selectdata=True)
+        impbcor(imagename=myimagebase+'.image', pbimage=myimagebase+'.pb', outfile=myimagebase+'.image.pbcor', overwrite=True)
+        exportfits(imagename=myimagebase+'.image.pbcor', fitsimage=myimagebase+'.image.pbcor.fits', overwrite=True, dropdeg=True)
+        exportfits(imagename=myimagebase+'.pb', fitsimage=myimagebase+'.pb.fits', overwrite=True, dropdeg=True)
+        exportfits(imagename=myimagebase+'.residual', fitsimage=myimagebase+'.residual.fits', overwrite=True, dropdeg=True)
+
+        for suffix in ('pb', 'weight', 'sumwt', 'psf', 'model', 'mask',
+                       'image', 'residual'):
+            os.system('rm -rf {0}.{1}'.format(output, suffix))
+
+    print("Completed {0}".format(output))
+
 
     output = imagename = myimagebase = 'W51betweene1ande8_QbandAarray_{0}'.format(line)
 
@@ -76,39 +117,8 @@ for line, freq, spw in (
                        'image', 'residual'):
             os.system('rm -rf {0}.{1}'.format(output, suffix))
 
-    print("Completed {0}".format(line))
+    print("Completed {0}".format(output))
 
-
-    output = imagename = myimagebase = 'W51e2w_QbandAarray_{0}'.format(line)
-
-    if not os.path.exists(imagename+".image.pbcor.fits"):
-        os.system('rm -rf ' + output + '*/')
-
-        print(imagename)
-
-        tclean(vis=line_vis,
-               imagename=imagename,
-               field='W51e2w',
-               spw='{0}'.format(spw),
-               weighting='briggs',
-               robust=0.0,
-               imsize=[512,512],
-               cell=['0.01 arcsec'],
-               threshold='50 mJy',
-               niter=1000,
-               gridder='standard',
-               specmode='cube',
-               outframe='LSRK',
-               savemodel='none',
-               selectdata=True)
-        impbcor(imagename=myimagebase+'.image', pbimage=myimagebase+'.pb', outfile=myimagebase+'.image.pbcor', overwrite=True)
-        exportfits(imagename=myimagebase+'.image.pbcor', fitsimage=myimagebase+'.image.pbcor.fits', overwrite=True, dropdeg=True)
-        exportfits(imagename=myimagebase+'.pb', fitsimage=myimagebase+'.pb.fits', overwrite=True, dropdeg=True)
-        exportfits(imagename=myimagebase+'.residual', fitsimage=myimagebase+'.residual.fits', overwrite=True, dropdeg=True)
-
-        for suffix in ('pb', 'weight', 'sumwt', 'psf', 'model', 'mask',
-                       'image', 'residual'):
-            os.system('rm -rf {0}.{1}'.format(output, suffix))
 
 
 
@@ -130,6 +140,7 @@ for line, freq, spw in (
                cell=['0.01 arcsec'],
                threshold='50 mJy',
                niter=1000,
+               reffreq='{0}GHz'.format(freq),
                gridder='standard',
                specmode='cube',
                outframe='LSRK',
