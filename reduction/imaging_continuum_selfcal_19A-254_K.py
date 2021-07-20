@@ -4,6 +4,8 @@ if 'field_list' not in locals():
 if isinstance(field_list, str):
     raise TypeError("Make field list a list or tuple")
 
+import os
+
 def makefits(myimagebase):
     impbcor(imagename=myimagebase+'.image.tt0', pbimage=myimagebase+'.pb.tt0', outfile=myimagebase+'.image.tt0.pbcor', overwrite=True) # perform PBcorr
     exportfits(imagename=myimagebase+'.image.tt0.pbcor', fitsimage=myimagebase+'.image.tt0.pbcor.fits', dropdeg=True, overwrite=True) # export the corrected image
@@ -74,8 +76,9 @@ for field in field_list:
                            'image{tt}.pbcor',
                            'alpha', ):
                 rmfile = "{0}.{1}".format(output, suffix).format(tt=ttsuffix)
-                print("Removing {0}".format(rmfile))
-                os.system('rm -rf {0}'.format(rmfile))
+                if os.path.exists(rmfile):
+                    print("Removing {0}".format(rmfile))
+                    os.system('rm -rf {0}'.format(rmfile))
 
         tclean(vis=selfcal_vis,
                imagename=imagename,
