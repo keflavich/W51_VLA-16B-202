@@ -33,7 +33,9 @@ if not os.path.exists(cont_vis):
 
     cont_vises = ["cont_"+vv for vv in vis]
 
-    assert concat(vis=cont_vises, concatvis=cont_vis)
+    concat(vis=cont_vises, concatvis=cont_vis)
+
+assert os.path.exists(cont_vis)
 
 selfcal_vis = cont_vis
 

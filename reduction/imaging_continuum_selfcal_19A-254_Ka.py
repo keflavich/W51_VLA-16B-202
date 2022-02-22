@@ -36,7 +36,9 @@ if not os.path.exists(cont_vis):
 
     cont_vises = ["cont_"+vv for vv in vis]
 
-    assert concat(vis=cont_vises, concatvis=cont_vis)
+    concat(vis=cont_vises, concatvis=cont_vis)
+
+assert os.path.exists(cont_vis)
 
 selfcal_vis = cont_vis
 
@@ -93,7 +95,7 @@ for field in field_list:
                deconvolver='mtmfs',
                outframe='LSRK',
                savemodel='modelcolumn',
-               scales=[0,3,9],
+               #scales=[0,3,9],
                nterms=nterms,
                selectdata=True,
                mask=mask,
@@ -172,7 +174,7 @@ for field in field_list:
            deconvolver='mtmfs',
            outframe='LSRK',
            savemodel='modelcolumn',
-           scales=[0,3,9],
+           #scales=[0,3,9],
            nterms=nterms,
            selectdata=True,
            mask=mask,
